@@ -3,29 +3,14 @@ import time
 import requests
 import json
 import pysher
-import base64
 import schedule
-import random
 import threading
-import uuid
 
 from urllib.parse import urljoin
-# from src import config_staging as config
-from src.parlay_integrations import config
+from src import config
 from src.log import logging
 from src import constants
-from datetime import datetime
-from pytz import timezone
 
-GLOCAL_RESULT = []
-RUNNING = False
-MAX_LATENCY = 0
-def _request_post_star(argdict: dict):
-    GLOCAL_RESULT.append(requests.post(**argdict))
-
-def _get_est_time_now():
-    tz = timezone('EST')
-    return datetime.now(tz)
 
 class ParlayInteractions:
     base_url: str = None
@@ -35,7 +20,6 @@ class ParlayInteractions:
     all_tournaments: dict = dict()    # mapping from string to id
     my_tournaments: dict = dict()
     sport_events: dict = dict()   # key is event id, value is a list of event details and markets
-    wagers: dict = dict()    # all wagers bet in the session
     valid_odds: list = []
     pusher = None
 
@@ -207,19 +191,7 @@ class ParlayInteractions:
             """
 
         def private_event_handler(*args, **kwargs):
-            global MAX_LATENCY
             print("processing private, Args:", args)
-            arg_dict = json.loads(args[0])
-            print(f"msg sent out at: {arg_dict.get('timestamp', 0) / 1000} \n event details {base64.b64decode(arg_dict.get('payload', '{}'))}")
-            payload = json.loads(base64.b64decode(arg_dict.get('payload', '{}')))
-            if arg_dict.get('change_type') == 'wagers':
-                if 'sequence_number' in payload['info'] and payload['info']['update_type'] == 'status':
-                    latency = (arg_dict.get('timestamp', 0)/1000 - payload['info']['sequence_number'])/1000
-                    print(f"timestamp - sequence number : {latency} ms")
-                    if latency > MAX_LATENCY:
-                        MAX_LATENCY = latency
-            elif arg_dict.get('change_type') != 'private_system_signal':
-                print(1)
             print("processing private, Kwargs:", kwargs)
 
         # We can't subscribe until we've connected, so we use a callback handler
@@ -307,14 +279,6 @@ class ParlayInteractions:
                 self.pusher = None
             # self.subscribe()    # need to subscribe again, as the old access token will expire soon
 
-    def auto_betting(self):
-        logging.info("schedule to bet every 10 seconds")
-        schedule.every(8).minutes.do(self.__auto_extend_session)
-        schedule.every(30).minutes.do(self.seeding)
-
-        child_thread = threading.Thread(target=self.schedule_in_thread, daemon=False)
-        child_thread.start()
-
     def keep_alive(self):
         child_thread = threading.Thread(target=self.schedule_in_thread, daemon=False)
         child_thread.start()
@@ -324,13 +288,6 @@ class ParlayInteractions:
             'Authorization': f'Bearer '
                              f'{self.mm_session["access_token"]}',
         }
-
-    def __get_random_odds(self):
-        odds = self.valid_odds[random.randint(0, len(self.valid_odds) - 1)]
-        odds = odds if random.random() < 0.5 else -1 * odds
-        if odds == -100:
-            odds = 100
-        return odds
 
 
 

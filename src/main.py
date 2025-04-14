@@ -1,5 +1,5 @@
 from src import parlay_connect
-from src import logging
+from src.log import logging
 
 
 if __name__ == '__main__':
