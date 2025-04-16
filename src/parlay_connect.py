@@ -118,8 +118,8 @@ class ParlayInteractions:
                         if len(selection) == 0 or selection[0].get('line_id', None) is None:
                             pass
                             #raise Exception(f'line_id is empty for event {key}')
-                        else:
-                            print(selection[0]['line_id'])
+                        #else:
+                        #    print(selection[0]['line_id'])
                 elif 'market_lines' in market:
                     for market_line in market['market_lines']:
                         if 'selections' not in market_line or len(market_line['selections']) == 0:
@@ -130,7 +130,7 @@ class ParlayInteractions:
                                 continue
                             if selection[0].get('line_id', None) is None:
                                 raise Exception(f'line_id is empty for event {key}')
-                            print(selection[0]['line_id'])
+                            #print(selection[0]['line_id'])
                 else:
                     #raise Exception("no selection, no market_lines")
                     print("no selection, no market_lines")
@@ -227,7 +227,7 @@ class ParlayInteractions:
 
     def provide_price(self, price_quote_request):
         # have to be valid for more than 5 seconds
-        now_nanno = int((time.time() + 10) * 1000000000)
+        now_nanno = int((time.time() + 500) * 1000000000)
         provide_price_result = requests.post(
             price_quote_request['callback_url'],
             data=json.dumps({
