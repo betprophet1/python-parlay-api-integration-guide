@@ -193,6 +193,7 @@ class ParlayInteractions:
         def private_event_handler(*args, **kwargs):
             print("processing private, Args:", args)
             print("processing private, Kwargs:", kwargs)
+            # TODO: add logic to accept or reject Parlay confirmation
 
         # We can't subscribe until we've connected, so we use a callback handler
         # to subscribe when able
@@ -213,6 +214,7 @@ class ParlayInteractions:
             for event in public_events:
                 # 'price.ask.new' is to receive parlay quoting requests
                 broadcast_channel.bind(event, public_event_handler)
+                logging.info(f"subscribed to broadcast channel, event name: {event}, successfully")
 
             private_channel = self.pusher.subscribe(private_channel_name)
             for private_event in private_events:
@@ -233,7 +235,7 @@ class ParlayInteractions:
                 'offers': [
                     {
                         'valid_until': now_nanno,
-                        'odds': 1000,
+                        'odds': 100000,
                         'max_risk': 200
                     },
                     {
