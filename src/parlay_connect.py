@@ -8,6 +8,7 @@ import threading
 
 from urllib.parse import urljoin
 from src import config
+#from src import config_staging as config
 from src.log import logging
 from src import constants
 
@@ -192,8 +193,8 @@ class ParlayInteractions:
 
         def private_event_handler(*args, **kwargs):
             print("processing private, Args:", args)
-            print("processing private, Kwargs:", kwargs)
-            # TODO: add logic to accept or reject Parlay confirmation
+            event_received = json.loads(args[0]).get('payload', '{}')
+            self.confirm_price(event_received)
 
         # We can't subscribe until we've connected, so we use a callback handler
         # to subscribe when able
@@ -251,6 +252,48 @@ class ParlayInteractions:
             print("price sent successfully")
         else:
             print("price did not sent successfully")
+
+    def confirm_price(self, price_confirm_request):
+        # have to be valid for more than 5 seconds
+        confirm_price_result = requests.post(
+            price_confirm_request['callback_url'],
+            data=json.dumps({
+                                "action": "accept",  # "reject"
+                                "confirmed_odds": price_confirm_request['odds'],
+                                "confirmed_stake": 100.0,  # Optional. If null, no change to the stake
+                                "price_probability": [
+                                    {
+                                        "max_risk": 200.0,
+                                        "lines": [
+                                            {"line_id": "line_1",
+                                             "probability": 0.5
+                                             },
+                                            {"line_id": "line_2",
+                                             "probability": 0.4
+                                             }
+                                        ]
+                                    },
+                                    {
+                                      "max_risk": 3000.0,
+                                      "lines": [
+                                        {
+                                          "line_id": "line_1",
+                                          "probability": 0.4
+                                        },
+                                        {
+                                          "line_id": "line_2",
+                                          "probability": 0.5
+                                        }
+                                      ]
+                                    }
+                               ]
+                            }),
+            headers=self.__get_auth_header()
+        )
+        if confirm_price_result.status_code == 200:
+            print("price confirmed successfully")
+        else:
+            print("price did not confirm successfully")
 
     def get_balance(self):
         balance_url = urljoin(self.base_url, config.URL['mm_balance'])
