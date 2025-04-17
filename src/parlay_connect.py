@@ -260,7 +260,7 @@ class ParlayInteractions:
             data=json.dumps({
                                 "action": "accept",  # "reject"
                                 "confirmed_odds": price_confirm_request['odds'],
-                                "confirmed_stake": 100.0,  # Optional. If null, no change to the stake
+                                #"confirmed_stake": 100.0,  # Optional. If null, no change to the stake
                                 "price_probability": [
                                     {
                                         "max_risk": 200.0,
