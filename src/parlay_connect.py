@@ -304,6 +304,25 @@ class ParlayInteractions:
         self.balance = json.loads(response.content).get('data', {}).get('balance', 0)
         logging.info(f"still have ${self.balance} left")
 
+    def send_supported_lines(self):
+        balance_url = urljoin(self.base_url, config.URL['parlay_supported_lines'])
+        ids_supported = []
+        if len(self.sport_events) > 0:
+            one_event = list(self.sport_events.keys())[0]
+            for market in self.sport_events[one_event]['markets']:
+                if 'selections' in market:
+                    ids_supported.extend([x[0]['line_id'] for x in market['selections']])
+        if len(ids_supported) > 0:
+            response = requests.post(balance_url,
+                                     json={'supported_lines': ids_supported},
+                                     headers=self.__get_auth_header())
+            if response.status_code != 200:
+                logging.error("failed to send supported lines")
+            else:
+                logging.info("sent supported line successfully")
+        else:
+            logging.warning("No supported lines found")
+
     def schedule_in_thread(self):
         while True:
             schedule.run_pending()
