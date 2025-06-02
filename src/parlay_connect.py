@@ -229,6 +229,7 @@ class ParlayInteractions:
     def provide_price(self, price_quote_request):
         # have to be valid for more than 5 seconds
         now_nanno = int((time.time() + 500) * 1000000000)
+        lines = price_quote_request['market_lines']
         provide_price_result = requests.post(
             price_quote_request['callback_url'],
             data=json.dumps({
@@ -237,12 +238,14 @@ class ParlayInteractions:
                     {
                         'valid_until': now_nanno,
                         'odds': 100000,
-                        'max_risk': 200
+                        'max_risk': 200,
+                        "estimated_price": [{'line_id': x['line_id'], 'odds': 200} for x in lines]
                     },
                     {
                         'valid_until': now_nanno,
                         'odds': 800,
-                        'max_risk': 2000
+                        'max_risk': 2000,
+                        "estimated_price": [{'line_id': x['line_id'], 'odds': 200} for x in lines]
                     }
                 ]
             }),
