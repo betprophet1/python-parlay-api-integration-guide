@@ -191,10 +191,13 @@ class ParlayInteractions:
                'stake': 3.49}
             """
 
-        def private_event_handler(*args, **kwargs):
-            print("processing private, Args:", args)
+        def private_price_confirm_event_handler(*args, **kwargs):
+            print("processing price.confirm.new, Args:", args)
             event_received = json.loads(args[0]).get('payload', '{}')
             self.confirm_price(event_received)
+
+        def private_event_handler(*args, **kwargs):
+            print("processing other private events, Args:", args)
 
         # We can't subscribe until we've connected, so we use a callback handler
         # to subscribe when able
@@ -220,7 +223,10 @@ class ParlayInteractions:
             private_channel = self.pusher.subscribe(private_channel_name)
             for private_event in private_events:
                 # 'price.confirm.new'
-                private_channel.bind(private_event, private_event_handler)
+                if private_event == 'price.confirm.new':
+                    private_channel.bind(private_event, private_price_confirm_event_handler)
+                else:
+                    private_channel.bind(private_event, private_event_handler)
                 logging.info(f"subscribed to private channel, event name: {private_event}, successfully")
 
         self.pusher.connection.bind('pusher:connection_established', connect_handler)
