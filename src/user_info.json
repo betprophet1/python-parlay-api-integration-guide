@@ -1,6 +1,6 @@
 {
-    "access_key": "5c95c8b53a15bddf79232d4f17f9471d",
-    "secret_key": "9fc232107d5f1101971520ababd8aa94",
+    "access_key": "3324857df2d66566dfe6b660faa2923f",
+    "secret_key": "8c970658226e64c7346e753ed7377c48",
     "tournaments": ["NBA", "College Basketball", "NHL", "MLB"],
     "load_all_tournaments": false,
     "all_tournaments": ["NBA","NCAA Tournament","NHL", "Premier League",

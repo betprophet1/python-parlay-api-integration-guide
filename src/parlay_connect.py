@@ -7,10 +7,10 @@ import schedule
 import threading
 
 from urllib.parse import urljoin
-from src import config
-#from src import config_staging as config
-from src.log import logging
-from src import constants
+import config
+#import config_staging as config
+from log import logging
+import constants
 
 
 class ParlayInteractions:
@@ -39,19 +39,27 @@ class ParlayInteractions:
             logging.debug(response)
             raise Exception("login failed")
         mm_session = json.loads(response.content)['data']
-        logging.info(mm_session)
+        logging.info("\n" + "="*50)
+        logging.info("🔐 AUTHENTICATION SUCCESSFUL")
+        logging.info("="*50)
+        logging.info(f"🎫 Access Token: {mm_session['access_token'][:20]}...")
+        logging.info(f"⏰ Access Expires: {mm_session['access_expire_time']}")
+        logging.info(f"🔄 Refresh Token: {mm_session['refresh_token'][:20]}...")
+        logging.info(f"⏰ Refresh Expires: {mm_session['refresh_expire_time']}")
+        logging.info("="*50)
+        
         self.mm_session = mm_session
-        logging.info("MM session started")
+        logging.info("✅ MM session started successfully")
         return mm_session
 
     def seeding(self):
         # get allowed odds
-        logging.info("start to get allowed odds")
+        logging.info("\n🎯 Fetching allowed odds...")
         self.valid_odds = constants.VALID_ODDS_BACKUP
 
         # initiate available tournaments/sport_events
         # tournaments
-        logging.info("start seeding tournaments/events/markets")
+        logging.info("\n🌱 Starting tournament and market seeding...")
         t_url = urljoin(self.base_url, config.URL['mm_tournaments'])
         headers = self.__get_auth_header()
         try:
@@ -99,16 +107,19 @@ class ParlayInteractions:
                                 continue
                             event['markets'] = markets
                             self.sport_events[event['event_id']] = event
-                            logging.info(f'successfully get markets of events {event["name"]}')
+                            logging.info(f'✅ {event["name"]} markets loaded')
                         else:
-                            logging.info(f'failed to get markets of events {event["name"]},'
-                                         f' error: {market_response.reason}')
+                            logging.warning(f'⚠️  Failed to load markets for {event["name"]} - {market_response.reason}')
                 else:
-                    logging.info(f'skip tournament {one_t["name"]} as api request failed')
+                    logging.warning(f'⚠️  Skipping tournament {one_t["name"]} - API request failed')
 
-        logging.info("Done, seeding")
-        logging.info(f"found {len(self.my_tournaments)} tournament, ingested {len(self.sport_events)} "
-                     f"sport events from {len(config.TOURNAMENTS_INTERESTED)} tournaments")
+        logging.info("\n" + "="*60)
+        logging.info("🎉 SEEDING COMPLETED SUCCESSFULLY")
+        logging.info("="*60)
+        logging.info(f"🏆 Tournaments Found: {len(self.my_tournaments)}")
+        logging.info(f"🏟️  Sport Events Loaded: {len(self.sport_events)}")
+        logging.info(f"📋 Target Tournaments: {len(config.TOURNAMENTS_INTERESTED)}")
+        logging.info("="*60)
         for key in self.sport_events:
             one_event = self.sport_events[key]
             for market in one_event['markets']:
@@ -134,8 +145,8 @@ class ParlayInteractions:
                             #print(selection[0]['line_id'])
                 else:
                     #raise Exception("no selection, no market_lines")
-                    print("no selection, no market_lines")
-        print("validated")
+                    logging.warning("⚠️  Market has no selections or market_lines")
+        logging.info("✅ All market data validated successfully")
 
 
     def _get_channels(self, socket_id: float):
@@ -172,11 +183,43 @@ class ParlayInteractions:
                                     auth_endpoint_headers=auth_headers)
 
         def public_event_handler(*args, **kwargs):
-            print("processing public, Args:", args)
-            event_received = json.loads(args[0]).get('payload', '{}')
-            print(f"event details {event_received}")
-            print("processing public, Kwargs:", kwargs)
-            self.provide_price(event_received)
+            logging.info("\n" + "="*60)
+            logging.info("📈 PRICE QUOTE REQUEST RECEIVED")
+            logging.info("="*60)
+            
+            try:
+                event_received = json.loads(args[0]).get('payload', '{}')
+                
+                # Extract key information
+                parlay_id = event_received.get('parlay_id', 'N/A')
+                stake = event_received.get('stake', 'N/A')
+                market_lines = event_received.get('market_lines', [])
+                
+                logging.info(f"🎲 Parlay ID: {parlay_id}")
+                logging.info(f"💰 Stake Amount: ${stake}")
+                logging.info(f"📊 Number of Lines: {len(market_lines)}")
+                
+                # Log market lines in a formatted way
+                if market_lines:
+                    logging.info("\n📋 Market Lines:")
+                    for i, line in enumerate(market_lines, 1):
+                        line_id = line.get('line_id', 'N/A')
+                        market_id = line.get('market_id', 'N/A')
+                        outcome_id = line.get('outcome_id', 'N/A')
+                        sport_event_id = line.get('sport_event_id', 'N/A')
+                        line_value = line.get('line', 'N/A')
+                        
+                        logging.info(f"  {i}. Line ID: {line_id[:8]}...")
+                        logging.info(f"     Market: {market_id} | Outcome: {outcome_id}")
+                        logging.info(f"     Event: {sport_event_id} | Line: {line_value}")
+                        logging.info("")
+                
+                self.provide_price(event_received)
+                
+            except Exception as e:
+                logging.error(f"❌ Error processing public event: {str(e)}")
+            
+            logging.info("="*60)
             """
             {'callback_url': 'https://api-ss-sandbox.betprophet.co/parlay/sp/order/offers', 
             'created_at': 1744210012349577200,
@@ -192,9 +235,29 @@ class ParlayInteractions:
             """
 
         def private_event_handler(*args, **kwargs):
-            print("processing private, Args:", args)
-            event_received = json.loads(args[0]).get('payload', '{}')
-            self.confirm_price(event_received)
+            try:
+                event_received = json.loads(args[0]).get('payload', '{}')
+                
+                # Only process if it's a price confirmation request (has callback_url)
+                if 'callback_url' in event_received:
+                    logging.info("\n" + "="*50)
+                    logging.info("✅ PRICE CONFIRMATION REQUEST")
+                    logging.info("="*50)
+                    
+                    parlay_id = event_received.get('parlay_id', 'N/A')
+                    odds = event_received.get('odds', 'N/A')
+                    logging.info(f"🎲 Parlay ID: {parlay_id}")
+                    logging.info(f"📊 Confirmed Odds: {odds}")
+                    
+                    self.confirm_price(event_received)
+                    logging.info("="*50)
+                else:
+                    # Parse timestamp for health check
+                    timestamp = json.loads(args[0]).get('timestamp', 'N/A')
+                    logging.info(f"💚 Health check received - System OK (timestamp: {timestamp})")
+                    
+            except Exception as e:
+                logging.error(f"❌ Error processing private event: {str(e)}")
 
         # We can't subscribe until we've connected, so we use a callback handler
         # to subscribe when able
@@ -215,13 +278,13 @@ class ParlayInteractions:
             for event in public_events:
                 # 'price.ask.new' is to receive parlay quoting requests
                 broadcast_channel.bind(event, public_event_handler)
-                logging.info(f"subscribed to broadcast channel, event name: {event}, successfully")
+                logging.info(f"🔗 Subscribed to broadcast channel: {event}")
 
             private_channel = self.pusher.subscribe(private_channel_name)
             for private_event in private_events:
                 # 'price.confirm.new'
                 private_channel.bind(private_event, private_event_handler)
-                logging.info(f"subscribed to private channel, event name: {private_event}, successfully")
+                logging.info(f"🔒 Subscribed to private channel: {private_event}")
 
         self.pusher.connection.bind('pusher:connection_established', connect_handler)
         self.pusher.connect()
@@ -252,9 +315,10 @@ class ParlayInteractions:
             headers=self.__get_auth_header()
         )
         if provide_price_result.status_code == 200:
-            print("price sent successfully")
+            logging.info("🚀 Price quote sent successfully!")
         else:
-            print("price did not sent successfully")
+            logging.error(f"❌ Failed to send price quote - Status: {provide_price_result.status_code}")
+            logging.error(f"Response: {provide_price_result.text}")
 
     def confirm_price(self, price_confirm_request):
         # have to be valid for more than 5 seconds
@@ -294,9 +358,10 @@ class ParlayInteractions:
             headers=self.__get_auth_header()
         )
         if confirm_price_result.status_code == 200:
-            print("price confirmed successfully")
+            logging.info("✅ Price confirmation sent successfully!")
         else:
-            print("price did not confirm successfully")
+            logging.error(f"❌ Failed to send price confirmation - Status: {confirm_price_result.status_code}")
+            logging.error(f"Response: {confirm_price_result.text}")
 
     def get_balance(self):
         balance_url = urljoin(self.base_url, config.URL['mm_balance'])
@@ -305,7 +370,7 @@ class ParlayInteractions:
             logging.error("failed to get balance")
             return
         self.balance = json.loads(response.content).get('data', {}).get('balance', 0)
-        logging.info(f"still have ${self.balance} left")
+        logging.info(f"💰 Current Account Balance: ${self.balance:,.2f}")
 
     def send_supported_lines(self):
         balance_url = urljoin(self.base_url, config.URL['parlay_supported_lines'])
@@ -320,11 +385,11 @@ class ParlayInteractions:
                                      json={'supported_lines': ids_supported},
                                      headers=self.__get_auth_header())
             if response.status_code != 200:
-                logging.error("failed to send supported lines")
+                logging.error("❌ Failed to send supported lines")
             else:
-                logging.info("sent supported line successfully")
+                logging.info(f"📋 Successfully sent {len(ids_supported)} supported lines")
         else:
-            logging.warning("No supported lines found")
+            logging.warning("⚠️  No supported lines found to send")
 
     def schedule_in_thread(self):
         while True:
