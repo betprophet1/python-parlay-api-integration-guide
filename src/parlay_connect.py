@@ -196,6 +196,9 @@ class ParlayInteractions:
             event_received = json.loads(args[0]).get('payload', '{}')
             self.confirm_price(event_received)
 
+        def order_finalized_handler(*args, **kwargs):
+            print("order finalized, parlay contract is locked")
+
         def private_event_handler(*args, **kwargs):
             print("processing other private events, Args:", args)
 
@@ -225,6 +228,8 @@ class ParlayInteractions:
                 # 'price.confirm.new'
                 if private_event == 'price.confirm.new':
                     private_channel.bind(private_event, private_price_confirm_event_handler)
+                elif private_event == 'order.finalized':
+                    private_channel.bind(private_event, order_finalized_handler)
                 else:
                     private_channel.bind(private_event, private_event_handler)
                 logging.info(f"subscribed to private channel, event name: {private_event}, successfully")
