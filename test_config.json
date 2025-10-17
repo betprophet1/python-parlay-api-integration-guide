@@ -1,0 +1,87 @@
+{
+  "test_configuration": {
+    "description": "Configuration file for Parlay Matching Flow Test Suite",
+    "environment": "sandbox",
+    "base_url": "https://api-ss-sandbox.betprophet.co",
+    
+    "service_providers": {
+      "sp1": {
+        "name": "Market Maker 1",
+        "access_key": "e85df05bd1bd885fbc0fc4b24fdd2500",
+        "secret_key": "67344329e054349f07e7a29249dcadeb",
+        "description": "Primary SP for testing"
+      },
+      "sp2": {
+        "name": "Market Maker 2", 
+        "access_key": "ec45827afa933f97ec19e674c0fa39c6",
+        "secret_key": "442df8e9fe96e4f7e744b2d3cac5cd51",
+        "description": "Secondary SP for testing"
+      }
+    },
+    
+    "user_credentials": {
+      "device_id": "e9594640-f309-11ec-9ad8-b75190c1f3c5",
+      "email": "long.partner@yopmail.com",
+      "password": "Test@2024",
+      "description": "User login credentials for authentication"
+    },
+    
+    "test_data": {
+      "market_lines": [
+        {
+          "line": 48.5,
+          "lineId": "d723f149c0e78df96b021f26694de0c3",
+          "marketId": 225,
+          "outcomeId": 12,
+          "sportEventId": 19145,
+          "description": "Team total points"
+        },
+        {
+          "line": -7,
+          "lineId": "9cc68c6abb055d99c9791229a4bed6e1",
+          "marketId": 223,
+          "outcomeId": 1714,
+          "sportEventId": 20022425,
+          "description": "Team spread bet"
+        },
+        {
+          "line": 1.5,
+          "lineId": "226e03f70e84b7977355b04b6ae58fa1",
+          "marketId": 256,
+          "outcomeId": 1715,
+          "sportEventId": 10076791,
+          "description": "Point spread"
+        }
+      ]
+    },
+    
+    "test_scenarios": {
+      "timing": {
+        "default_validity_seconds": 50,
+        "short_validity_seconds": 1,
+        "medium_validity_seconds": 10,
+        "long_validity_seconds": 60
+      },
+      
+      "odds_tiers": {
+        "best_odds": 1000,
+        "second_tier": 900,
+        "third_tier": 800,
+        "worst_odds": 750
+      },
+      
+      "stakes": {
+        "small_stake": 100,
+        "medium_stake": 300,
+        "large_stake": 500,
+        "exceed_capacity_stake": 800
+      },
+      
+      "sp_capacities": {
+        "small_capacity": 100,
+        "medium_capacity": 200,
+        "large_capacity": 300
+      }
+    }
+  }
+}

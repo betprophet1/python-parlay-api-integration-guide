@@ -321,40 +321,51 @@ class ParlayInteractions:
             logging.error(f"Response: {provide_price_result.text}")
 
     def confirm_price(self, price_confirm_request):
-        # have to be valid for more than 5 seconds
+        # Extract odds and calculate proper max_risk
+        odds = price_confirm_request.get('odds', 100)
+        stake = price_confirm_request.get('stake', 100.0)  # Default stake if not provided
+        
+        # Convert American odds to decimal odds
+        if odds > 0:
+            decimal_odds = (odds + 100) / 100
+        else:
+            decimal_odds = 100 / abs(odds) + 1
+        
+        # Calculate proper max_risk = stake × decimal_odds
+        max_risk_dollars = stake * decimal_odds
+        max_risk_cents = max_risk_dollars * 100  # Convert to cents for API
+        
+        logging.info(f"📋 MM calculating max_risk for confirmation:")
+        logging.info(f"   stake: ${stake:.2f}")
+        logging.info(f"   odds: {odds:+d}")
+        logging.info(f"   decimal_odds: {decimal_odds:.3f}")
+        logging.info(f"   max_risk: ${stake:.2f} × {decimal_odds:.3f} = ${max_risk_dollars:.2f}")
+        logging.info(f"   max_risk (cents): {max_risk_cents:.0f}")
+        
+        # Extract line IDs from the request
+        lines = price_confirm_request.get('market_lines', [])
+        price_probability_lines = []
+        
+        for line in lines:
+            price_probability_lines.append({
+                "line_id": line.get('line_id', 'unknown'),
+                "probability": 0.5
+            })
+        
         confirm_price_result = requests.post(
             price_confirm_request['callback_url'],
             data=json.dumps({
-                                "action": "accept",  # "reject"
-                                "confirmed_odds": price_confirm_request['odds'],
-                                #"confirmed_stake": 100.0,  # Optional. If null, no change to the stake
-                                "price_probability": [
-                                    {
-                                        "max_risk": 200.0,
-                                        "lines": [
-                                            {"line_id": "line_1",
-                                             "probability": 0.5
-                                             },
-                                            {"line_id": "line_2",
-                                             "probability": 0.4
-                                             }
-                                        ]
-                                    },
-                                    {
-                                      "max_risk": 3000.0,
-                                      "lines": [
-                                        {
-                                          "line_id": "line_1",
-                                          "probability": 0.4
-                                        },
-                                        {
-                                          "line_id": "line_2",
-                                          "probability": 0.5
-                                        }
-                                      ]
-                                    }
-                               ]
-                            }),
+                "action": "accept",  # "reject"
+                "confirmed_odds": odds,
+                "confirmed_stake": stake,  # FIXED: Now specify the confirmed stake
+                "price_probability": [
+                    {
+                        "max_risk": max_risk_cents,  # FIXED: Use calculated value
+                        "lines": price_probability_lines,
+                        "vig": 0.1
+                    }
+                ]
+            }),
             headers=self.__get_auth_header()
         )
         if confirm_price_result.status_code == 200:
