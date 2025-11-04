@@ -1,0 +1,618 @@
+[
+  {
+    "line": -30,
+    "lineId": "b1b57a4c26b9a3cf6d909829e97f0358",
+    "marketId": 223,
+    "outcomeId": 1714,
+    "sportEventId": 60070921
+  },
+  {
+    "line": 30,
+    "lineId": "eddacb8f65f9e5aaac41947fad51a5d8",
+    "marketId": 223,
+    "outcomeId": 1715,
+    "sportEventId": 60070921
+  },
+  {
+    "line": 151,
+    "lineId": "4af7120f4a166da97c28efa5e11c20ad",
+    "marketId": 225,
+    "outcomeId": 12,
+    "sportEventId": 60070921
+  },
+  {
+    "line": 151,
+    "lineId": "bb840210fb1d2c31d4a41cb798603a37",
+    "marketId": 225,
+    "outcomeId": 13,
+    "sportEventId": 60070921
+  },
+  {
+    "line": 0,
+    "lineId": "a4bbddf64edca9b031abf9e6d055aca5",
+    "marketId": 219,
+    "outcomeId": 4,
+    "sportEventId": 60070921
+  },
+  {
+    "line": 0,
+    "lineId": "60b4f3b70729f12802c23de581d1a054",
+    "marketId": 219,
+    "outcomeId": 5,
+    "sportEventId": 60070921
+  },
+  {
+    "line": 0,
+    "lineId": "7bccbba9d5e68f7af0c476b915d61346",
+    "marketId": 219,
+    "outcomeId": 4,
+    "sportEventId": 60070922
+  },
+  {
+    "line": 0,
+    "lineId": "2756d978650c8b22431cc30096ce5778",
+    "marketId": 219,
+    "outcomeId": 5,
+    "sportEventId": 60070922
+  },
+  {
+    "line": 148.5,
+    "lineId": "512bb892e0e5f5a1e0bfcfd0e21b08d9",
+    "marketId": 225,
+    "outcomeId": 12,
+    "sportEventId": 60070922
+  },
+  {
+    "line": 148.5,
+    "lineId": "4de3274e1803ff92ccefa72ead5ece39",
+    "marketId": 225,
+    "outcomeId": 13,
+    "sportEventId": 60070922
+  },
+  {
+    "line": -19,
+    "lineId": "a8548b3d0ce676f9e86aef7d4df46662",
+    "marketId": 223,
+    "outcomeId": 1714,
+    "sportEventId": 60070922
+  },
+  {
+    "line": 19,
+    "lineId": "4f9751057ff3cd25a91c4cf6b69aca2e",
+    "marketId": 223,
+    "outcomeId": 1715,
+    "sportEventId": 60070922
+  },
+  {
+    "line": -16,
+    "lineId": "932040bf5ae9fd57a6936d80dd32176c",
+    "marketId": 223,
+    "outcomeId": 1714,
+    "sportEventId": 60069070
+  },
+  {
+    "line": 16,
+    "lineId": "8e1f4a9ecc294b46a235bc7fdd11bd89",
+    "marketId": 223,
+    "outcomeId": 1715,
+    "sportEventId": 60069070
+  },
+  {
+    "line": 142.5,
+    "lineId": "6b52e9299d9904f24106243b118e767b",
+    "marketId": 225,
+    "outcomeId": 12,
+    "sportEventId": 60069070
+  },
+  {
+    "line": 142.5,
+    "lineId": "471e485748abc82eb753757f963a2e26",
+    "marketId": 225,
+    "outcomeId": 13,
+    "sportEventId": 60069070
+  },
+  {
+    "line": 0,
+    "lineId": "de5c9855174cbc6d3f7d4e5a5816f10d",
+    "marketId": 219,
+    "outcomeId": 4,
+    "sportEventId": 60069070
+  },
+  {
+    "line": 0,
+    "lineId": "c9beb39118b7c1579036ceb42f134bfc",
+    "marketId": 219,
+    "outcomeId": 5,
+    "sportEventId": 60069070
+  },
+  {
+    "line": -19,
+    "lineId": "ec4d03294fecf047295187f2ed435b5d",
+    "marketId": 223,
+    "outcomeId": 1714,
+    "sportEventId": 60068288
+  },
+  {
+    "line": 19,
+    "lineId": "542ce9210f67942e024e43287a5b05c5",
+    "marketId": 223,
+    "outcomeId": 1715,
+    "sportEventId": 60068288
+  },
+  {
+    "line": 157.5,
+    "lineId": "6ce860f39b783476ebdbbc81d496b8cc",
+    "marketId": 225,
+    "outcomeId": 12,
+    "sportEventId": 60068288
+  },
+  {
+    "line": 157.5,
+    "lineId": "89c2ca7d99060ba44f6608291815d7c7",
+    "marketId": 225,
+    "outcomeId": 13,
+    "sportEventId": 60068288
+  },
+  {
+    "line": 0,
+    "lineId": "82a2a256449ad69c88281f0a0bbeb7ab",
+    "marketId": 219,
+    "outcomeId": 4,
+    "sportEventId": 60068288
+  },
+  {
+    "line": 0,
+    "lineId": "50cb1ce488a0145fafc3bbc3deaa6f7b",
+    "marketId": 219,
+    "outcomeId": 5,
+    "sportEventId": 60068288
+  },
+  {
+    "line": -20,
+    "lineId": "a7acd1cdc0c4ac7d3161501b31e93e1b",
+    "marketId": 223,
+    "outcomeId": 1714,
+    "sportEventId": 60070917
+  },
+  {
+    "line": 20,
+    "lineId": "2f175f728ec66a5945412b061e305b16",
+    "marketId": 223,
+    "outcomeId": 1715,
+    "sportEventId": 60070917
+  },
+  {
+    "line": 144,
+    "lineId": "05b3d2b985d81b8fa28bdf6ed2b3eb1c",
+    "marketId": 225,
+    "outcomeId": 12,
+    "sportEventId": 60070917
+  },
+  {
+    "line": 144,
+    "lineId": "f6ed289dc539b4c32f5a39fd8c54093a",
+    "marketId": 225,
+    "outcomeId": 13,
+    "sportEventId": 60070917
+  },
+  {
+    "line": 0,
+    "lineId": "511e75c128a486bd4f0064a67fadbddf",
+    "marketId": 219,
+    "outcomeId": 4,
+    "sportEventId": 60070917
+  },
+  {
+    "line": 0,
+    "lineId": "f06c0817d2f674f8e4bb40b3a886a8f1",
+    "marketId": 219,
+    "outcomeId": 5,
+    "sportEventId": 60070917
+  },
+  {
+    "line": 155,
+    "lineId": "44f5e4aff8e0f0e7e6f60912d78d22fe",
+    "marketId": 225,
+    "outcomeId": 12,
+    "sportEventId": 60070919
+  },
+  {
+    "line": 155,
+    "lineId": "2b7c4c612f94e3c09bc70700763b66a3",
+    "marketId": 225,
+    "outcomeId": 13,
+    "sportEventId": 60070919
+  },
+  {
+    "line": 0,
+    "lineId": "5ca16c2c2962a775b750aed500d77aa2",
+    "marketId": 219,
+    "outcomeId": 4,
+    "sportEventId": 60070919
+  },
+  {
+    "line": 0,
+    "lineId": "655e3149de62b5b7afd81554996a2425",
+    "marketId": 219,
+    "outcomeId": 5,
+    "sportEventId": 60070919
+  },
+  {
+    "line": -6.5,
+    "lineId": "70813228e321c4a4752a96b4086a5e0c",
+    "marketId": 223,
+    "outcomeId": 1714,
+    "sportEventId": 60070919
+  },
+  {
+    "line": 6.5,
+    "lineId": "037f5a767adf7b26ff85fb9d4bdde029",
+    "marketId": 223,
+    "outcomeId": 1715,
+    "sportEventId": 60070919
+  },
+  {
+    "line": 145,
+    "lineId": "6e0d1543bf5878ba89886e9fa8f611ab",
+    "marketId": 225,
+    "outcomeId": 12,
+    "sportEventId": 60069069
+  },
+  {
+    "line": 145,
+    "lineId": "eed71e8033cdbaec05465d4ecdea46ca",
+    "marketId": 225,
+    "outcomeId": 13,
+    "sportEventId": 60069069
+  },
+  {
+    "line": -32,
+    "lineId": "280fc1c5c8a3a00880719069d11a6297",
+    "marketId": 223,
+    "outcomeId": 1714,
+    "sportEventId": 60069069
+  },
+  {
+    "line": 32,
+    "lineId": "677f52c890414bd22241dde05da3583e",
+    "marketId": 223,
+    "outcomeId": 1715,
+    "sportEventId": 60069069
+  },
+  {
+    "line": 0,
+    "lineId": "8cae81ad568efa76d522c83f4e152d25",
+    "marketId": 219,
+    "outcomeId": 4,
+    "sportEventId": 60069069
+  },
+  {
+    "line": 0,
+    "lineId": "46b332f943cdecf6a7ab137c0f3e8c11",
+    "marketId": 219,
+    "outcomeId": 5,
+    "sportEventId": 60069069
+  },
+  {
+    "line": -10,
+    "lineId": "681d7a0ae749ddf07b9d8dd242de0b88",
+    "marketId": 223,
+    "outcomeId": 1714,
+    "sportEventId": 60068740
+  },
+  {
+    "line": 10,
+    "lineId": "45e45714eec0de67e91d9da20310d28e",
+    "marketId": 223,
+    "outcomeId": 1715,
+    "sportEventId": 60068740
+  },
+  {
+    "line": 144,
+    "lineId": "ba4d6edf136c76611111721b8aef79a9",
+    "marketId": 225,
+    "outcomeId": 12,
+    "sportEventId": 60068740
+  },
+  {
+    "line": 144,
+    "lineId": "6b092460743a562fb5b2e5cb8aaae395",
+    "marketId": 225,
+    "outcomeId": 13,
+    "sportEventId": 60068740
+  },
+  {
+    "line": 0,
+    "lineId": "1b05eae306ec12e79b19f866c69ed715",
+    "marketId": 219,
+    "outcomeId": 4,
+    "sportEventId": 60068740
+  },
+  {
+    "line": 0,
+    "lineId": "2ed7e444f3ea3757fe1ba3154cdb84cc",
+    "marketId": 219,
+    "outcomeId": 5,
+    "sportEventId": 60068740
+  },
+  {
+    "line": 138,
+    "lineId": "1cae37b3d42d313128315cd82058786a",
+    "marketId": 225,
+    "outcomeId": 12,
+    "sportEventId": 60069702
+  },
+  {
+    "line": 138,
+    "lineId": "95118e9bb2fc2864b69d41ac27e9335b",
+    "marketId": 225,
+    "outcomeId": 13,
+    "sportEventId": 60069702
+  },
+  {
+    "line": -20.5,
+    "lineId": "897d20f03c3fe0ecbfe9ed7f1f72c7ea",
+    "marketId": 223,
+    "outcomeId": 1714,
+    "sportEventId": 60069702
+  },
+  {
+    "line": 20.5,
+    "lineId": "8a2b743d42835df2201865d1e26ac982",
+    "marketId": 223,
+    "outcomeId": 1715,
+    "sportEventId": 60069702
+  },
+  {
+    "line": 0,
+    "lineId": "5a58167420e6be6c88ae49653172a07f",
+    "marketId": 219,
+    "outcomeId": 4,
+    "sportEventId": 60069702
+  },
+  {
+    "line": 0,
+    "lineId": "a8d2b8812f967840dfbfb282c9371eab",
+    "marketId": 219,
+    "outcomeId": 5,
+    "sportEventId": 60069702
+  },
+  {
+    "line": -16.5,
+    "lineId": "1049ae6c7b2ddfb02409092def6f92c4",
+    "marketId": 223,
+    "outcomeId": 1714,
+    "sportEventId": 60069071
+  },
+  {
+    "line": 16.5,
+    "lineId": "466d77206c7f382eb3878b72934e27d9",
+    "marketId": 223,
+    "outcomeId": 1715,
+    "sportEventId": 60069071
+  },
+  {
+    "line": 151,
+    "lineId": "b9ce0ba879964b6812f9742320279b3f",
+    "marketId": 225,
+    "outcomeId": 12,
+    "sportEventId": 60069071
+  },
+  {
+    "line": 151,
+    "lineId": "b4e04a87c104e3cd1b9b2db6eafe6fbc",
+    "marketId": 225,
+    "outcomeId": 13,
+    "sportEventId": 60069071
+  },
+  {
+    "line": 0,
+    "lineId": "212d959794d248cd6bc09bb23e250888",
+    "marketId": 219,
+    "outcomeId": 4,
+    "sportEventId": 60069071
+  },
+  {
+    "line": 0,
+    "lineId": "875a74c466d5e7aa8c92fdb447b2c900",
+    "marketId": 219,
+    "outcomeId": 5,
+    "sportEventId": 60069071
+  },
+  {
+    "line": -17.5,
+    "lineId": "39a0576f3f4afa2042672ab6850dd9d7",
+    "marketId": 223,
+    "outcomeId": 1714,
+    "sportEventId": 60069236
+  },
+  {
+    "line": 17.5,
+    "lineId": "f7fc6a305cecb900c3ce18ace9f91eb7",
+    "marketId": 223,
+    "outcomeId": 1715,
+    "sportEventId": 60069236
+  },
+  {
+    "line": 145,
+    "lineId": "d950cb6384105f4abc05bb66749174b4",
+    "marketId": 225,
+    "outcomeId": 12,
+    "sportEventId": 60069236
+  },
+  {
+    "line": 145,
+    "lineId": "449456afd1d48a21a2a24bd0575a60d3",
+    "marketId": 225,
+    "outcomeId": 13,
+    "sportEventId": 60069236
+  },
+  {
+    "line": 0,
+    "lineId": "05e28e971cdff3e5dd948d98e7a42305",
+    "marketId": 219,
+    "outcomeId": 4,
+    "sportEventId": 60069236
+  },
+  {
+    "line": 0,
+    "lineId": "4b7937ec17b77f17a8dd436c40f6706a",
+    "marketId": 219,
+    "outcomeId": 5,
+    "sportEventId": 60069236
+  },
+  {
+    "line": 0,
+    "lineId": "639ce253fa0b9e78de84e6ac7b7b2c2a",
+    "marketId": 219,
+    "outcomeId": 4,
+    "sportEventId": 60069581
+  },
+  {
+    "line": 0,
+    "lineId": "fd43a1bba77510a0792f689dfd3874d7",
+    "marketId": 219,
+    "outcomeId": 5,
+    "sportEventId": 60069581
+  },
+  {
+    "line": -7,
+    "lineId": "c8850f92bef4154419c4f5b25942c3df",
+    "marketId": 223,
+    "outcomeId": 1714,
+    "sportEventId": 60069581
+  },
+  {
+    "line": 7,
+    "lineId": "04c53fcb496655bdce00c67c1ac4ad23",
+    "marketId": 223,
+    "outcomeId": 1715,
+    "sportEventId": 60069581
+  },
+  {
+    "line": 144,
+    "lineId": "9982a1f034c8f911c7a1a2eefc23c9e2",
+    "marketId": 225,
+    "outcomeId": 12,
+    "sportEventId": 60069581
+  },
+  {
+    "line": 144,
+    "lineId": "3890ed958bb1ef287abbdae5a1332b18",
+    "marketId": 225,
+    "outcomeId": 13,
+    "sportEventId": 60069581
+  },
+  {
+    "line": -19.5,
+    "lineId": "4daf062acd884df81eb774d7c2893caf",
+    "marketId": 223,
+    "outcomeId": 1714,
+    "sportEventId": 60069700
+  },
+  {
+    "line": 19.5,
+    "lineId": "b451e86f55381f8163296930c65354f4",
+    "marketId": 223,
+    "outcomeId": 1715,
+    "sportEventId": 60069700
+  },
+  {
+    "line": 143.5,
+    "lineId": "8e738686e52205acf7cf7e559b6ad1ef",
+    "marketId": 225,
+    "outcomeId": 12,
+    "sportEventId": 60069700
+  },
+  {
+    "line": 143.5,
+    "lineId": "7428922a52a300001f5c65bfab00d3ee",
+    "marketId": 225,
+    "outcomeId": 13,
+    "sportEventId": 60069700
+  },
+  {
+    "line": 0,
+    "lineId": "37aac89bd13344d30bd91cb300ea8d17",
+    "marketId": 219,
+    "outcomeId": 4,
+    "sportEventId": 60069700
+  },
+  {
+    "line": 0,
+    "lineId": "bd5690e51623808fc380b2462ddc1e62",
+    "marketId": 219,
+    "outcomeId": 5,
+    "sportEventId": 60069700
+  },
+  {
+    "line": 0,
+    "lineId": "1ccf20c00fd33ee51ec55b5931f0c671",
+    "marketId": 219,
+    "outcomeId": 4,
+    "sportEventId": 60068504
+  },
+  {
+    "line": 0,
+    "lineId": "1ccf20c00fd33ee51ec55b5931f0c671",
+    "marketId": 219,
+    "outcomeId": 4,
+    "sportEventId": 60068504
+  },
+  {
+    "line": 0,
+    "lineId": "e023e655c531a9468b21786241007ebd",
+    "marketId": 219,
+    "outcomeId": 5,
+    "sportEventId": 60068504
+  },
+  {
+    "line": 7.5,
+    "lineId": "f3c2cd983b8101247f574c32b0c74d48",
+    "marketId": 223,
+    "outcomeId": 1714,
+    "sportEventId": 60068504
+  },
+  {
+    "line": 7.5,
+    "lineId": "f3c2cd983b8101247f574c32b0c74d48",
+    "marketId": 223,
+    "outcomeId": 1714,
+    "sportEventId": 60068504
+  },
+  {
+    "line": -7.5,
+    "lineId": "69046994670f9f13de16c649c098bf38",
+    "marketId": 223,
+    "outcomeId": 1715,
+    "sportEventId": 60068504
+  },
+  {
+    "line": 150.5,
+    "lineId": "e7a88d14ccf8428c9ea904058587616a",
+    "marketId": 225,
+    "outcomeId": 12,
+    "sportEventId": 60068504
+  },
+  {
+    "line": 150.5,
+    "lineId": "e7a88d14ccf8428c9ea904058587616a",
+    "marketId": 225,
+    "outcomeId": 12,
+    "sportEventId": 60068504
+  },
+  {
+    "line": 150.5,
+    "lineId": "e7a88d14ccf8428c9ea904058587616a",
+    "marketId": 225,
+    "outcomeId": 12,
+    "sportEventId": 60068504
+  },
+  {
+    "line": 150.5,
+    "lineId": "67445c2c349857d3c013aab60d3c040d",
+    "marketId": 225,
+    "outcomeId": 13,
+    "sportEventId": 60068504
+  }
+]

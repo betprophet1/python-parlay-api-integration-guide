@@ -1,0 +1,409 @@
+{
+  "realistic_stake_scenarios": [
+    {
+      "scenario_name": "User's Original Example Replicated",
+      "description": "Replicate user's observation: +800 odds, $12.50 stake, $100 payout",
+      "sp_offers": [
+        {
+          "sp_name": "SP1",
+          "odds": 800,
+          "max_risk_dollars": 112.5,
+          "max_risk_cents": 11250,
+          "available_stake_dollars": 12.5,
+          "available_stake_cents": 1250,
+          "description": "Best odds with exact capacity for $12.50 stake"
+        },
+        {
+          "sp_name": "SP2",
+          "odds": 800,
+          "max_risk_dollars": 112.5,
+          "max_risk_cents": 11250,
+          "available_stake_dollars": 12.5,
+          "available_stake_cents": 1250,
+          "description": "Matching SP for blended liquidity"
+        }
+      ],
+      "user_confirmation_ratio": 0.5,
+      "expected_behavior": "Should match exactly: $12.50 stake \u2192 $100 payout",
+      "calculations": {
+        "best_odds": 800,
+        "total_available_stake_dollars": 25.0,
+        "total_available_stake_cents": 2500,
+        "user_confirmation_stake_dollars": 12.5,
+        "user_confirmation_stake_cents": 1250,
+        "expected_payout_dollars": 100.0,
+        "expected_payout_cents": 10000,
+        "decimal_odds": 9.0
+      }
+    },
+    {
+      "scenario_name": "Low Odds High Stakes",
+      "description": "Favorite lines with high available stakes",
+      "sp_offers": [
+        {
+          "sp_name": "SP1",
+          "odds": 150,
+          "max_risk_dollars": 600.0,
+          "max_risk_cents": 60000,
+          "available_stake_dollars": 240.0,
+          "available_stake_cents": 24000,
+          "description": "Confident in favorite, high capacity"
+        },
+        {
+          "sp_name": "SP2",
+          "odds": 150,
+          "max_risk_dollars": 375.0,
+          "max_risk_cents": 37500,
+          "available_stake_dollars": 150.0,
+          "available_stake_cents": 15000,
+          "description": "Secondary capacity on favorite"
+        }
+      ],
+      "user_confirmation_ratio": 0.6,
+      "expected_behavior": "High stake confirmation: ~$234 stake \u2192 ~$140 payout",
+      "calculations": {
+        "best_odds": 150,
+        "total_available_stake_dollars": 390.0,
+        "total_available_stake_cents": 39000,
+        "user_confirmation_stake_dollars": 234.0,
+        "user_confirmation_stake_cents": 23400,
+        "expected_payout_dollars": 351.0,
+        "expected_payout_cents": 35100,
+        "decimal_odds": 2.5
+      }
+    },
+    {
+      "scenario_name": "High Odds Low Stakes",
+      "description": "Long shot parlay with limited available stakes",
+      "sp_offers": [
+        {
+          "sp_name": "SP1",
+          "odds": 1200,
+          "max_risk_dollars": 195.0,
+          "max_risk_cents": 19500,
+          "available_stake_dollars": 15.0,
+          "available_stake_cents": 1500,
+          "description": "Long shot with moderate risk tolerance"
+        },
+        {
+          "sp_name": "SP2",
+          "odds": 1200,
+          "max_risk_dollars": 260.0,
+          "max_risk_cents": 26000,
+          "available_stake_dollars": 20.0,
+          "available_stake_cents": 2000,
+          "description": "Slightly higher risk tolerance"
+        }
+      ],
+      "user_confirmation_ratio": 1.0,
+      "expected_behavior": "Low stake confirmation: ~$35 stake \u2192 ~$420 payout",
+      "calculations": {
+        "best_odds": 1200,
+        "total_available_stake_dollars": 35.0,
+        "total_available_stake_cents": 3500,
+        "user_confirmation_stake_dollars": 35.0,
+        "user_confirmation_stake_cents": 3500,
+        "expected_payout_dollars": 420.0,
+        "expected_payout_cents": 42000,
+        "decimal_odds": 13.0
+      }
+    },
+    {
+      "scenario_name": "Mixed Odds Best Selection",
+      "description": "Multiple SPs with different odds, user should see best",
+      "sp_offers": [
+        {
+          "sp_name": "SP1",
+          "odds": 900,
+          "max_risk_dollars": 270.0,
+          "max_risk_cents": 27000,
+          "available_stake_dollars": 27.0,
+          "available_stake_cents": 2700,
+          "description": "Best odds with good capacity"
+        },
+        {
+          "sp_name": "SP2",
+          "odds": 750,
+          "max_risk_dollars": 300.0,
+          "max_risk_cents": 30000,
+          "available_stake_dollars": 35.29,
+          "available_stake_cents": 3529,
+          "description": "Worse odds, better capacity"
+        },
+        {
+          "sp_name": "SP3",
+          "odds": 600,
+          "max_risk_dollars": 420.0,
+          "max_risk_cents": 42000,
+          "available_stake_dollars": 60.0,
+          "available_stake_cents": 6000,
+          "description": "Worst odds, highest capacity"
+        }
+      ],
+      "user_confirmation_ratio": 0.8,
+      "expected_behavior": "User sees +900 odds with $27 available, confirms ~$22",
+      "calculations": {
+        "best_odds": 900,
+        "total_available_stake_dollars": 27.0,
+        "total_available_stake_cents": 2700,
+        "user_confirmation_stake_dollars": 21.6,
+        "user_confirmation_stake_cents": 2160,
+        "expected_payout_dollars": 194.4,
+        "expected_payout_cents": 19440,
+        "decimal_odds": 10.0
+      }
+    },
+    {
+      "scenario_name": "Favorite Lines Negative Odds",
+      "description": "Standard favorite lines with negative odds",
+      "sp_offers": [
+        {
+          "sp_name": "SP1",
+          "odds": -110,
+          "max_risk_dollars": 190.9,
+          "max_risk_cents": 19090,
+          "available_stake_dollars": 100.0,
+          "available_stake_cents": 9999,
+          "description": "Standard -110 favorite"
+        },
+        {
+          "sp_name": "SP2",
+          "odds": -105,
+          "max_risk_dollars": 200.0,
+          "max_risk_cents": 20000,
+          "available_stake_dollars": 102.44,
+          "available_stake_cents": 10243,
+          "description": "Slightly better favorite odds"
+        }
+      ],
+      "user_confirmation_ratio": 0.7,
+      "expected_behavior": "User sees -105 odds with ~$105 available, confirms ~$74",
+      "calculations": {
+        "best_odds": -105,
+        "total_available_stake_dollars": 102.44,
+        "total_available_stake_cents": 10243,
+        "user_confirmation_stake_dollars": 71.71,
+        "user_confirmation_stake_cents": 7170,
+        "expected_payout_dollars": 68.29,
+        "expected_payout_cents": 6829,
+        "decimal_odds": 1.952
+      }
+    },
+    {
+      "scenario_name": "Even Money Bets",
+      "description": "50/50 proposition bets",
+      "sp_offers": [
+        {
+          "sp_name": "SP1",
+          "odds": 100,
+          "max_risk_dollars": 300.0,
+          "max_risk_cents": 30000,
+          "available_stake_dollars": 150.0,
+          "available_stake_cents": 15000,
+          "description": "Even money proposition"
+        },
+        {
+          "sp_name": "SP2",
+          "odds": 105,
+          "max_risk_dollars": 315.0,
+          "max_risk_cents": 31500,
+          "available_stake_dollars": 153.66,
+          "available_stake_cents": 15365,
+          "description": "Slightly better even money"
+        }
+      ],
+      "user_confirmation_ratio": 0.9,
+      "expected_behavior": "User sees +105 odds with ~$154 available, confirms ~$138",
+      "calculations": {
+        "best_odds": 105,
+        "total_available_stake_dollars": 153.66,
+        "total_available_stake_cents": 15365,
+        "user_confirmation_stake_dollars": 138.29,
+        "user_confirmation_stake_cents": 13829,
+        "expected_payout_dollars": 145.21,
+        "expected_payout_cents": 14520,
+        "decimal_odds": 2.05
+      }
+    },
+    {
+      "scenario_name": "Extreme Long Shot",
+      "description": "Very high odds parlay with tiny stakes",
+      "sp_offers": [
+        {
+          "sp_name": "SP1",
+          "odds": 2500,
+          "max_risk_dollars": 260.0,
+          "max_risk_cents": 26000,
+          "available_stake_dollars": 10.0,
+          "available_stake_cents": 1000,
+          "description": "Extreme long shot, limited risk"
+        },
+        {
+          "sp_name": "SP2",
+          "odds": 2500,
+          "max_risk_dollars": 520.0,
+          "max_risk_cents": 52000,
+          "available_stake_dollars": 20.0,
+          "available_stake_cents": 2000,
+          "description": "Higher risk tolerance on long shot"
+        }
+      ],
+      "user_confirmation_ratio": 1.0,
+      "expected_behavior": "Very low stakes: ~$30 stake \u2192 ~$750 payout",
+      "calculations": {
+        "best_odds": 2500,
+        "total_available_stake_dollars": 30.0,
+        "total_available_stake_cents": 3000,
+        "user_confirmation_stake_dollars": 30.0,
+        "user_confirmation_stake_cents": 3000,
+        "expected_payout_dollars": 750.0,
+        "expected_payout_cents": 75000,
+        "decimal_odds": 26.0
+      }
+    },
+    {
+      "scenario_name": "Heavy Favorite",
+      "description": "Heavy favorite with very negative odds",
+      "sp_offers": [
+        {
+          "sp_name": "SP1",
+          "odds": -300,
+          "max_risk_dollars": 150.0,
+          "max_risk_cents": 15000,
+          "available_stake_dollars": 112.5,
+          "available_stake_cents": 11250,
+          "description": "Heavy favorite, moderate risk"
+        },
+        {
+          "sp_name": "SP2",
+          "odds": -280,
+          "max_risk_dollars": 175.0,
+          "max_risk_cents": 17500,
+          "available_stake_dollars": 128.95,
+          "available_stake_cents": 12894,
+          "description": "Slightly better odds on heavy favorite"
+        }
+      ],
+      "user_confirmation_ratio": 0.8,
+      "expected_behavior": "High stake on heavy favorite: ~$157 stake \u2192 ~$47 payout",
+      "calculations": {
+        "best_odds": -280,
+        "total_available_stake_dollars": 128.95,
+        "total_available_stake_cents": 12894,
+        "user_confirmation_stake_dollars": 103.16,
+        "user_confirmation_stake_cents": 10315,
+        "expected_payout_dollars": 36.84,
+        "expected_payout_cents": 3684,
+        "decimal_odds": 1.357
+      }
+    },
+    {
+      "scenario_name": "High Liquidity Blending",
+      "description": "Many SPs with same odds providing high liquidity",
+      "sp_offers": [
+        {
+          "sp_name": "SP1",
+          "odds": 500,
+          "max_risk_dollars": 150.0,
+          "max_risk_cents": 15000,
+          "available_stake_dollars": 25.0,
+          "available_stake_cents": 2500,
+          "description": "First SP with good odds"
+        },
+        {
+          "sp_name": "SP2",
+          "odds": 500,
+          "max_risk_dollars": 180.0,
+          "max_risk_cents": 18000,
+          "available_stake_dollars": 30.0,
+          "available_stake_cents": 3000,
+          "description": "Second SP, higher capacity"
+        },
+        {
+          "sp_name": "SP3",
+          "odds": 500,
+          "max_risk_dollars": 120.0,
+          "max_risk_cents": 12000,
+          "available_stake_dollars": 20.0,
+          "available_stake_cents": 2000,
+          "description": "Third SP, moderate capacity"
+        },
+        {
+          "sp_name": "SP4",
+          "odds": 500,
+          "max_risk_dollars": 225.0,
+          "max_risk_cents": 22500,
+          "available_stake_dollars": 37.5,
+          "available_stake_cents": 3750,
+          "description": "Fourth SP, highest capacity"
+        }
+      ],
+      "user_confirmation_ratio": 0.6,
+      "expected_behavior": "High liquidity: ~$112 available, user confirms ~$67",
+      "calculations": {
+        "best_odds": 500,
+        "total_available_stake_dollars": 112.5,
+        "total_available_stake_cents": 11250,
+        "user_confirmation_stake_dollars": 67.5,
+        "user_confirmation_stake_cents": 6750,
+        "expected_payout_dollars": 337.5,
+        "expected_payout_cents": 33750,
+        "decimal_odds": 6.0
+      }
+    },
+    {
+      "scenario_name": "Tier Based Matching Required",
+      "description": "Large user stake requiring multiple SP tiers",
+      "sp_offers": [
+        {
+          "sp_name": "SP1",
+          "odds": 400,
+          "max_risk_dollars": 200.0,
+          "max_risk_cents": 20000,
+          "available_stake_dollars": 40.0,
+          "available_stake_cents": 4000,
+          "description": "Best tier, limited capacity"
+        },
+        {
+          "sp_name": "SP2",
+          "odds": 400,
+          "max_risk_dollars": 150.0,
+          "max_risk_cents": 15000,
+          "available_stake_dollars": 30.0,
+          "available_stake_cents": 3000,
+          "description": "Best tier, additional capacity"
+        },
+        {
+          "sp_name": "SP3",
+          "odds": 380,
+          "max_risk_dollars": 190.0,
+          "max_risk_cents": 19000,
+          "available_stake_dollars": 39.58,
+          "available_stake_cents": 3958,
+          "description": "Second tier fallback"
+        },
+        {
+          "sp_name": "SP4",
+          "odds": 350,
+          "max_risk_dollars": 280.0,
+          "max_risk_cents": 28000,
+          "available_stake_dollars": 62.22,
+          "available_stake_cents": 6222,
+          "description": "Third tier, high capacity"
+        }
+      ],
+      "user_confirmation_ratio": 1.0,
+      "expected_behavior": "Multi-tier matching: User wants $70, system blends tiers",
+      "calculations": {
+        "best_odds": 400,
+        "total_available_stake_dollars": 70.0,
+        "total_available_stake_cents": 7000,
+        "user_confirmation_stake_dollars": 70.0,
+        "user_confirmation_stake_cents": 7000,
+        "expected_payout_dollars": 280.0,
+        "expected_payout_cents": 28000,
+        "decimal_odds": 5.0
+      }
+    }
+  ]
+}
