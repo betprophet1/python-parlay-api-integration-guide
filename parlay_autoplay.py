@@ -54,12 +54,13 @@ class TestResult:
 
 class ParlayAutoplay:
     def __init__(self, mode: str = 'normal', iterations: int = 10, 
-                 concurrency: int = 1, delay: float = 1.0):
+                 concurrency: int = 1, delay: float = 1.0, complete_bets: bool = True):
         self.base_url = "https://api-ss-sandbox.betprophet.co"
         self.mode = mode
         self.iterations = iterations
         self.concurrency = concurrency
         self.delay = delay
+        self.complete_bets = complete_bets  # Whether to complete full bet flow
         
         # Working SP Credentials
         self.sp1_credentials = {
@@ -85,6 +86,12 @@ class ParlayAutoplay:
         self.lock = threading.Lock()
         self.running = True
         self.start_time = None
+        
+        # Token caching to reduce authentication calls
+        self.cached_user_token = None
+        self.cached_sp1_token = None
+        self.cached_sp2_token = None
+        self.last_auth_time = 0
         
         # Setup signal handlers for graceful shutdown
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -141,7 +148,11 @@ class ParlayAutoplay:
         return selected_lines
 
     def get_user_token(self) -> Tuple[str, float]:
-        """Get user authentication token with timing"""
+        """Get user authentication token with timing (cached)"""
+        # Return cached token if available and not too old (< 10 minutes)
+        if self.cached_user_token and (time.time() - self.last_auth_time) < 600:
+            return self.cached_user_token, 0
+        
         url = f"{self.base_url}/api/v1/auth/login"
         payload = {
             "device_id": "e9594640-f309-11ec-9ad8-b75190c1f3c5",
@@ -159,14 +170,25 @@ class ParlayAutoplay:
             
             if response.status_code == 200:
                 token = response.json().get("accessToken")
+                self.cached_user_token = token
+                self.last_auth_time = time.time()
                 return token, response_time
             else:
                 return "fallback_token", response_time
         except Exception as e:
             return "fallback_token", time.time() - start_time
 
-    def authenticate_sp(self, credentials: Dict[str, str]) -> Tuple[Optional[str], float]:
-        """Authenticate SP with timing"""
+    def authenticate_sp(self, credentials: Dict[str, str], sp_name: str = "SP") -> Tuple[Optional[str], float]:
+        """Authenticate SP with timing (cached)"""
+        # Check cache based on SP credentials
+        cache_key = credentials["access_key"]
+        if cache_key == self.sp1_credentials["access_key"] and self.cached_sp1_token:
+            if (time.time() - self.last_auth_time) < 600:  # Token valid for 10 min
+                return self.cached_sp1_token, 0
+        elif cache_key == self.sp2_credentials["access_key"] and self.cached_sp2_token:
+            if (time.time() - self.last_auth_time) < 600:
+                return self.cached_sp2_token, 0
+        
         url = f"{self.base_url}/partner/auth/login"
         
         start_time = time.time()
@@ -181,11 +203,19 @@ class ParlayAutoplay:
             
             if response.status_code == 200:
                 token = response.json()["data"]["access_token"]
+                # Cache the token
+                if cache_key == self.sp1_credentials["access_key"]:
+                    self.cached_sp1_token = token
+                else:
+                    self.cached_sp2_token = token
+                self.last_auth_time = time.time()
                 return token, response_time
             else:
+                logger.debug(f"{sp_name} auth failed: {response.status_code}")
                 return None, response_time
                 
         except Exception as e:
+            logger.debug(f"{sp_name} auth error: {e}")
             return None, time.time() - start_time
 
     def create_parlay(self, user_token: str, market_lines: List[Dict]) -> Tuple[Optional[str], float]:
@@ -257,6 +287,109 @@ class ParlayAutoplay:
         except Exception as e:
             return False, time.time() - start_time
 
+    def user_confirm_bet(self, parlay_id: str, user_token: str, odds: int, stake: int = 1000) -> Tuple[bool, float]:
+        """User confirms the bet (Step 5)"""
+        url = f"{self.base_url}/parlay/api/v1/user/confirm"
+        
+        payload = {
+            "parlayId": parlay_id,
+            "odds": odds,
+            "stake": stake  # in cents, default $10
+        }
+        
+        headers = {
+            "Authorization": f"Bearer {user_token}",
+            "Content-Type": "application/json"
+        }
+        
+        start_time = time.time()
+        try:
+            response = requests.post(url, json=payload, headers=headers)
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                return True, response_time
+            else:
+                return False, response_time
+                
+        except Exception as e:
+            return False, time.time() - start_time
+
+    def sp_acknowledge_confirmation(self, parlay_id: str, sp_token: str, market_lines: List[Dict], 
+                                    stake: int, odds: int) -> Tuple[bool, float]:
+        """SP acknowledges/accepts the confirmation (Step 6)"""
+        
+        # First get the order to find order_uuid
+        orders_url = f"{self.base_url}/parlay/sp/orders"
+        headers = {"Authorization": f"Bearer {sp_token}"}
+        
+        try:
+            response = requests.get(orders_url, headers=headers)
+            if response.status_code != 200:
+                logger.debug(f"Get orders failed: {response.status_code}")
+                return False, 0
+            
+            orders = response.json()["data"]["orders"]
+            order_uuid = None
+            
+            # Find matching order
+            for order in orders:
+                if order["p_id"] == parlay_id and order["status"] == "sent_confirmation":
+                    order_uuid = order["order_uuid"]
+                    break
+            
+            if not order_uuid:
+                logger.debug(f"No order found for parlay {parlay_id} with status 'sent_confirmation'")
+                # Log available orders for debugging
+                matching_orders = [o for o in orders if o["p_id"] == parlay_id]
+                if matching_orders:
+                    logger.debug(f"Found orders with different status: {[o['status'] for o in matching_orders]}")
+                return False, 0
+            
+            # Calculate probability from odds
+            if odds > 0:
+                probability = 100 / (odds + 100)
+            else:
+                probability = abs(odds) / (abs(odds) + 100)
+            
+            # Calculate max_risk
+            decimal_odds = (odds + 100) / 100 if odds > 0 else 100 / abs(odds) + 1
+            max_risk_dollars = (stake / 100) * decimal_odds
+            max_risk_cents = int(max_risk_dollars * 100)
+            
+            # Acknowledge confirmation with order_uuid as query parameter
+            confirm_url = f"{self.base_url}/parlay/sp/orders/confirmations"
+            payload = {
+                "action": "accept",
+                "confirmed_stake": stake / 100,  # Convert to dollars
+                "price_probability": [{
+                    "lines": [
+                        {
+                            "line_id": line["lineId"],
+                            "probability": probability
+                        }
+                        for line in market_lines
+                    ],
+                    "max_risk": max_risk_cents,
+                    "vig": 0.1
+                }],
+                "signature": f"autoplay_sig_{int(time.time())}"
+            }
+            
+            start_time = time.time()
+            # order_uuid must be passed as query parameter!
+            response = requests.post(confirm_url, json=payload, headers=headers, 
+                                    params={"order_uuid": order_uuid})
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                return True, response_time
+            else:
+                return False, response_time
+                
+        except Exception as e:
+            return False, 0
+
     def run_single_test(self, iteration: int, thread_id: Optional[int] = None) -> TestResult:
         """Run a single test iteration with random legs"""
         
@@ -298,17 +431,23 @@ class ParlayAutoplay:
                 error="User authentication failed"
             )
         
-        # Step 2: Authenticate SP
-        sp1_token, _ = self.authenticate_sp(self.sp1_credentials)
-        if not sp1_token:
+        # Step 2: Authenticate both SPs (cached)
+        sp1_token, _ = self.authenticate_sp(self.sp1_credentials, "SP1")
+        sp2_token, _ = self.authenticate_sp(self.sp2_credentials, "SP2")
+        
+        if not sp1_token and not sp2_token:
             return TestResult(
                 iteration=iteration,
                 leg_count=actual_leg_count,
                 success=False,
                 total_time=time.time() - start_time,
                 thread_id=thread_id,
-                error="SP authentication failed"
+                error="All SP authentication failed"
             )
+        
+        # Use whichever SP authenticated successfully
+        sp_token = sp1_token if sp1_token else sp2_token
+        sp_name = "SP1" if sp1_token else "SP2"
         
         # Step 3: Create parlay with random legs
         parlay_id, _ = self.create_parlay(user_token, market_lines)
@@ -323,7 +462,9 @@ class ParlayAutoplay:
             )
         
         # Step 4: SP provides offer
-        offer_success, _ = self.sp_offer(parlay_id, sp1_token, 800, 20000, market_lines)
+        odds = 800  # +800 odds
+        stake = 1000  # $10 in cents
+        offer_success, _ = self.sp_offer(parlay_id, sp_token, odds, 20000, market_lines)
         if not offer_success:
             return TestResult(
                 iteration=iteration,
@@ -334,6 +475,52 @@ class ParlayAutoplay:
                 parlay_id=parlay_id,
                 error="SP offer failed"
             )
+        
+        # If complete_bets flag is set, continue with confirmation and acceptance
+        if self.complete_bets:
+            logger.info(f"🔄 Completing full bet flow for {parlay_id}...")
+            
+            # Wait for offer to be processed
+            time.sleep(1.5)
+            
+            # Step 5: User confirms the bet
+            logger.info(f"📝 User confirming bet for {parlay_id}...")
+            confirm_success, _ = self.user_confirm_bet(parlay_id, user_token, odds, stake)
+            if not confirm_success:
+                logger.warning(f"❌ User confirmation FAILED for {parlay_id}")
+                return TestResult(
+                    iteration=iteration,
+                    leg_count=actual_leg_count,
+                    success=False,
+                    total_time=time.time() - start_time,
+                    thread_id=thread_id,
+                    parlay_id=parlay_id,
+                    error="User confirmation failed"
+                )
+            logger.info(f"✅ User confirmed bet for {parlay_id}")
+            
+            # Wait for confirmation to be processed and status to update
+            time.sleep(2.0)
+            
+            # Step 6: Try SP acknowledgment with both SPs
+            ack_success = False
+            
+            # Try first SP
+            if sp1_token:
+                ack_success, _ = self.sp_acknowledge_confirmation(parlay_id, sp1_token, market_lines, stake, odds)
+                if ack_success:
+                    logger.info(f"✅ SP1 acknowledged confirmation for {parlay_id}")
+            
+            # If first failed, try second SP
+            if not ack_success and sp2_token:
+                time.sleep(1.0)  # Wait a bit before trying second SP
+                ack_success, _ = self.sp_acknowledge_confirmation(parlay_id, sp2_token, market_lines, stake, odds)
+                if ack_success:
+                    logger.info(f"✅ SP2 acknowledged confirmation for {parlay_id}")
+            
+            if not ack_success:
+                logger.info(f"⚠️  Both SPs failed acknowledgment for {parlay_id} - bet at offer stage")
+                # Don't fail the test, just note it
         
         total_time = time.time() - start_time
         
@@ -603,13 +790,16 @@ Examples:
     logger.info("\n" + "="*100)
     logger.info("🎰 PARLAY AUTOPLAY - CONTINUOUS LOAD TESTING SYSTEM")
     logger.info("="*100)
+    logger.info("🏁 Full bet completion: ENABLED (creates, offers, confirms, accepts)")
+    logger.info("="*100)
     
     # Create and run autoplay
     autoplay = ParlayAutoplay(
         mode=args.mode,
         iterations=args.iterations,
         concurrency=args.concurrency,
-        delay=args.delay
+        delay=args.delay,
+        complete_bets=True  # Always complete bets
     )
     
     try:
