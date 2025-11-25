@@ -81,7 +81,7 @@ class ParlayInteractions:
 
         # get sportevents and markets of each
         event_url = urljoin(self.base_url, config.URL['mm_events'])
-        market_url = urljoin(self.base_url, config.URL['mm_markets'])
+        multiple_markets_url = urljoin(self.base_url, config.URL['mm_multiple_markets'])
         self.sport_events = dict()
         for one_t in all_tournaments:
             if one_t['name'] in config.TOURNAMENTS_INTERESTED or config.LOAD_ALL_TOURNAMENTS:
@@ -97,19 +97,22 @@ class ParlayInteractions:
                     events = json.loads(events_response.content).get('data', {}).get('sport_events')
                     if events is None:
                         continue
-                    for event in events:
-                        market_response = requests.get(market_url, params={'event_id': event['event_id']},
-                                                       headers=headers)
-                        if market_response.status_code == 200:
-                            markets = json.loads(market_response.content).get('data', {}).get('markets', {})
-                            if markets is None:
-                                # this is more like a bug in MM api, as the event actually already closed
+                    
+                    # Batch fetch markets for all events in this tournament
+                    event_ids = ','.join([str(event['event_id']) for event in events])
+                    multiple_markets_response = requests.get(multiple_markets_url, params={'event_ids': event_ids},
+                                                   headers=headers)
+                    if multiple_markets_response.status_code == 200:
+                        map_market_by_event_id = json.loads(multiple_markets_response.content).get('data', {})
+                        for event in events:
+                            if str(event['event_id']) not in map_market_by_event_id:
+                                # Event may not have markets available
                                 continue
-                            event['markets'] = markets
+                            event['markets'] = map_market_by_event_id[str(event['event_id'])]
                             self.sport_events[event['event_id']] = event
                             logging.info(f'✅ {event["name"]} markets loaded')
-                        else:
-                            logging.warning(f'⚠️  Failed to load markets for {event["name"]} - {market_response.reason}')
+                    else:
+                        logging.warning(f'⚠️  Failed to batch load markets for tournament {one_t["name"]} - {multiple_markets_response.reason}')
                 else:
                     logging.warning(f'⚠️  Skipping tournament {one_t["name"]} - API request failed')
 

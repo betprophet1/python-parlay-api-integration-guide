@@ -24,6 +24,7 @@ URL = {
     'mm_tournaments': 'partner/mm/get_tournaments',
     'mm_events': 'partner/mm/get_sport_events',
     'mm_markets': 'partner/mm/get_markets',
+    'mm_multiple_markets': 'partner/mm/get_multiple_markets',
     'mm_balance': 'partner/mm/get_balance',
     'parlay_connection_config': 'parlay/sp/websocket/connection-config',
     'parlay_websocket_auth': 'parlay/sp/websocket/register',
