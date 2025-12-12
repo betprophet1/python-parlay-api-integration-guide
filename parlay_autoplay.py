@@ -61,11 +61,14 @@ class TestResult:
     expected_result: str = "accept"  # 'accept' or 'reject'
     actual_result: str = "unknown"  # 'accepted', 'rejected', 'error'
     validation_passed: bool = False  # True if actual matches expected
+    # Probability type
+    probability_type: str = "invalid"  # 'valid' (same-game) or 'invalid' (multi-event)
 
 class ParlayAutoplay:
     def __init__(self, mode: str = 'normal', iterations: int = 10, 
                  concurrency: int = 1, delay: float = 1.0, complete_bets: bool = True,
-                 chaos_mode: bool = False, chaos_invalid_rate: float = 0.5):
+                 chaos_mode: bool = False, chaos_invalid_rate: float = 0.5,
+                 same_game_rate: float = 0.5, min_legs: int = 2, max_legs: int = 12):
         self.base_url = "https://api-ss-sandbox.betprophet.co"
         self.mode = mode
         self.iterations = iterations
@@ -74,6 +77,9 @@ class ParlayAutoplay:
         self.complete_bets = complete_bets  # Whether to complete full bet flow
         self.chaos_mode = chaos_mode  # Whether to enable chaos testing
         self.chaos_invalid_rate = chaos_invalid_rate  # % of invalid parlays in chaos mode
+        self.same_game_rate = same_game_rate  # % of same-game parlays (valid probability)
+        self.min_legs = min_legs  # Minimum number of legs per parlay
+        self.max_legs = max_legs  # Maximum number of legs per parlay
         
         # Working SP Credentials
         self.sp1_credentials = {
@@ -119,13 +125,23 @@ class ParlayAutoplay:
             'rule5_accepted': 0
         }
         
+        # Probability type tracking
+        self.probability_stats = {
+            'same_game_accepted': 0,      # Valid probability
+            'same_game_rejected': 0,
+            'multi_event_accepted': 0,    # Invalid probability
+            'multi_event_rejected': 0
+        }
+        
         # Token caching to reduce authentication calls
+        # Reduced cache time to 3 minutes for faster expiration detection
         self.cached_user_token = None
         self.cached_sp1_token = None
         self.cached_sp2_token = None
         self.last_user_auth_time = 0
         self.last_sp1_auth_time = 0
         self.last_sp2_auth_time = 0
+        self.token_cache_duration = 180  # 3 minutes instead of 5
         
         # Track consecutive failures for auto-restart
         self.consecutive_sp_failures = 0
@@ -141,7 +157,7 @@ class ParlayAutoplay:
         self.running = False
     
     def check_token_expiration_and_restart(self, error_msg: str):
-        """Check if error is due to token expiration and restart if needed"""
+        """Check if error is due to token expiration and raise exception to trigger restart"""
         # Increment consecutive failure counter
         self.consecutive_sp_failures += 1
         
@@ -150,24 +166,10 @@ class ParlayAutoplay:
             logger.warning(f"⚠️  DETECTED {self.consecutive_sp_failures} CONSECUTIVE SP OFFER FAILURES")
             logger.warning(f"{'='*100}")
             logger.warning("🔄 Likely cause: Token expiration or API rate limit")
-            logger.warning("🔄 Clearing cached tokens and restarting test session...\n")
+            logger.warning("🔄 Triggering session restart...\n")
             
-            # Clear all cached tokens to force re-authentication
-            self.cached_user_token = None
-            self.cached_sp1_token = None
-            self.cached_sp2_token = None
-            self.last_user_auth_time = 0
-            self.last_sp1_auth_time = 0
-            self.last_sp2_auth_time = 0
-            
-            # Reset failure counter
-            self.consecutive_sp_failures = 0
-            
-            # Wait a bit before retrying
-            time.sleep(3)
-            
-            logger.info("✅ Tokens cleared, resuming tests with fresh authentication...\n")
-            return True
+            # Raise exception to trigger restart at outer level
+            raise Exception("TokenExpirationRestart")
         
         return False
     
@@ -204,6 +206,50 @@ class ParlayAutoplay:
         }
         return market_names.get(market_id, f"Market{market_id}")
     
+    def _odds_to_probability(self, american_odds: int) -> float:
+        """Convert American odds to implied probability"""
+        if american_odds > 0:
+            return 100 / (american_odds + 100)
+        else:
+            return abs(american_odds) / (abs(american_odds) + 100)
+    
+    def _generate_valid_leg_probabilities(self, num_legs: int, target_combined_prob: float) -> List[float]:
+        """Generate leg probabilities that multiply to approximately the target probability
+        
+        This ensures the combined probability matches the parlay odds for valid probability.
+        
+        Args:
+            num_legs: Number of legs in the parlay
+            target_combined_prob: Target combined probability (derived from parlay odds)
+            
+        Returns:
+            List of leg probabilities that multiply close to target
+        """
+        # Start with equal distribution
+        avg_prob = target_combined_prob ** (1 / num_legs)
+        
+        # Add some randomness while keeping product close to target
+        probabilities = []
+        for i in range(num_legs - 1):
+            # Vary each leg by ±20% from average
+            variation = random.uniform(0.8, 1.2)
+            prob = avg_prob * variation
+            # Clamp to realistic range
+            prob = max(0.20, min(0.85, prob))
+            probabilities.append(round(prob, 8))
+        
+        # Calculate last probability to hit target exactly
+        product_so_far = 1.0
+        for p in probabilities:
+            product_so_far *= p
+        
+        last_prob = target_combined_prob / product_so_far
+        # Clamp to realistic range
+        last_prob = max(0.20, min(0.85, last_prob))
+        probabilities.append(round(last_prob, 8))
+        
+        return probabilities
+    
     def _group_lines_by_event(self) -> Dict:
         """Group lines by event and categorize by market type for chaos testing"""
         grouped = defaultdict(lambda: {
@@ -229,16 +275,18 @@ class ParlayAutoplay:
         
         return dict(grouped)
     
-    def get_random_market_lines(self, min_legs: int = 2, max_legs: int = 12) -> Tuple[str, List[Dict]]:
+    def get_random_market_lines(self) -> Tuple[str, List[Dict], str]:
         """Get random selection of market lines for parlay
         
+        Uses configured min_legs and max_legs from instance.
+        
         Returns:
-            Tuple[str, List[Dict]]: (parlay_type, market_lines)
-            parlay_type: 'valid', 'rule1_both_sides_moneyline', 'rule2_moneyline_negative_spread', 
-                        'rule3_opposing_spreads_sum_lte_0'
+            Tuple[str, List[Dict], str]: (parlay_type, market_lines, probability_type)
+            parlay_type: 'valid', 'rule1_both_sides_moneyline', etc.
+            probability_type: 'valid' (same-game) or 'invalid' (multi-event)
         """
         if not self.all_market_lines:
-            return "valid", []
+            return "valid", [], "invalid"
         
         # If chaos mode is enabled, randomly generate valid or invalid parlays
         if self.chaos_mode:
@@ -249,23 +297,90 @@ class ParlayAutoplay:
                 violation_type = random.choice(['rule1', 'rule2', 'rule3', 'rule4', 'rule5'])
                 
                 if violation_type == 'rule1':
-                    return self._generate_rule1_violation()
+                    parlay_type, lines = self._generate_rule1_violation()
+                    return parlay_type, lines, "invalid"  # Multi-event
                 elif violation_type == 'rule2':
-                    return self._generate_rule2_violation()
+                    parlay_type, lines = self._generate_rule2_violation()
+                    return parlay_type, lines, "invalid"
                 elif violation_type == 'rule3':
-                    return self._generate_rule3_violation()
+                    parlay_type, lines = self._generate_rule3_violation()
+                    return parlay_type, lines, "invalid"
                 elif violation_type == 'rule4':
-                    return self._generate_rule4_violation()
+                    parlay_type, lines = self._generate_rule4_violation()
+                    return parlay_type, lines, "invalid"
                 elif violation_type == 'rule5':
-                    return self._generate_rule5_violation()
+                    parlay_type, lines = self._generate_rule5_violation()
+                    return parlay_type, lines, "invalid"
         
-        # Generate valid parlay (default behavior)
-        return self._generate_valid_parlay(min_legs, max_legs)
+        # Decide between same-game (valid probability) or multi-event (invalid probability)
+        should_be_same_game = random.random() < self.same_game_rate
+        
+        if should_be_same_game:
+            return self._generate_same_game_parlay(self.min_legs, self.max_legs)
+        else:
+            return self._generate_multi_event_parlay(self.min_legs, self.max_legs)
     
-    def _generate_valid_parlay(self, min_legs: int = 2, max_legs: int = 12) -> Tuple[str, List[Dict]]:
-        """Generate a valid parlay (one line per event)"""
+    def _generate_same_game_parlay(self, min_legs: int = 2, max_legs: int = 6) -> Tuple[str, List[Dict], str]:
+        """Generate a same-game parlay (valid probability)
+        
+        Returns legs from the SAME event with different market types.
+        This creates valid probability calculations.
+        """
         if not self.all_market_lines:
-            return "valid", []
+            return "valid", [], "valid"
+        
+        # Random leg count (2-6 for same-game, typically smaller)
+        leg_count = random.randint(min_legs, min(max_legs, 6))
+        
+        # Group lines by event
+        lines_by_event = {}
+        for line in self.all_market_lines:
+            event_id = line['sportEventId']
+            if event_id not in lines_by_event:
+                lines_by_event[event_id] = []
+            lines_by_event[event_id].append(line)
+        
+        # Find events with enough different market types
+        suitable_events = []
+        for event_id, lines in lines_by_event.items():
+            # Count unique market types in this event
+            market_types = set(line['marketId'] for line in lines)
+            if len(market_types) >= leg_count:
+                suitable_events.append(event_id)
+        
+        if not suitable_events:
+            # Fallback to multi-event if no suitable same-game found
+            return self._generate_multi_event_parlay(min_legs, max_legs)
+        
+        # Pick a random event
+        selected_event = random.choice(suitable_events)
+        event_lines = lines_by_event[selected_event]
+        
+        # Group by market type within this event
+        lines_by_market = {}
+        for line in event_lines:
+            market_id = line['marketId']
+            if market_id not in lines_by_market:
+                lines_by_market[market_id] = []
+            lines_by_market[market_id].append(line)
+        
+        # Pick one random line from different market types
+        selected_markets = random.sample(list(lines_by_market.keys()), leg_count)
+        selected_lines = []
+        for market_id in selected_markets:
+            line = random.choice(lines_by_market[market_id])
+            selected_lines.append(line)
+        
+        return "valid", selected_lines, "valid"
+    
+    def _generate_multi_event_parlay(self, min_legs: int = 2, max_legs: int = 12) -> Tuple[str, List[Dict], str]:
+        """Generate a multi-event parlay (invalid probability)
+        
+        Returns one line per event from DIFFERENT events.
+        This creates invalid probability calculations.
+        """
+        if not self.all_market_lines:
+            return "valid", [], "invalid"
         
         # Random leg count between min and max
         leg_count = random.randint(min_legs, max_legs)
@@ -293,7 +408,7 @@ class ParlayAutoplay:
             line = random.choice(lines_by_event[event_id])
             selected_lines.append(line)
         
-        return "valid", selected_lines
+        return "valid", selected_lines, "invalid"
     
     def _generate_rule1_violation(self) -> Tuple[str, List[Dict]]:
         """Rule 1: Both sides of moneyline from same event + valid legs (2-12 total legs)"""
@@ -303,7 +418,7 @@ class ParlayAutoplay:
         ]
         
         if not events_with_moneylines:
-            return self._generate_valid_parlay()  # Fallback
+            parlay_type, lines, prob_type = self._generate_multi_event_parlay(); return (parlay_type, lines)  # Fallback
         
         violation_event_id = random.choice(events_with_moneylines)
         moneylines = self.lines_by_event[violation_event_id]['moneylines']
@@ -316,7 +431,7 @@ class ParlayAutoplay:
                 unique_outcomes[outcome_id] = ml
         
         if len(unique_outcomes) < 2:
-            return self._generate_valid_parlay()  # Fallback
+            parlay_type, lines, prob_type = self._generate_multi_event_parlay(); return (parlay_type, lines)  # Fallback
         
         # Start with the violation: both sides of moneyline
         lines = list(unique_outcomes.values())[:2]
@@ -343,7 +458,7 @@ class ParlayAutoplay:
         ]
         
         if not suitable_events:
-            return self._generate_valid_parlay()  # Fallback
+            parlay_type, lines, prob_type = self._generate_multi_event_parlay(); return (parlay_type, lines)  # Fallback
         
         violation_event_id = random.choice(suitable_events)
         data = self.lines_by_event[violation_event_id]
@@ -352,14 +467,14 @@ class ParlayAutoplay:
         negative_spreads = [s for s in data['spreads'] if s['line'] < 0]
         
         if not negative_spreads or not data['moneylines']:
-            return self._generate_valid_parlay()  # Fallback
+            parlay_type, lines, prob_type = self._generate_multi_event_parlay(); return (parlay_type, lines)  # Fallback
         
         ml = random.choice(data['moneylines'])
         spread = random.choice(negative_spreads)
         
         # Check if they're opposite teams (different outcomeId parity)
         if (ml['outcomeId'] % 2) == (spread['outcomeId'] % 2):
-            return self._generate_valid_parlay()  # Fallback
+            parlay_type, lines, prob_type = self._generate_multi_event_parlay(); return (parlay_type, lines)  # Fallback
         
         # Start with violation
         lines = [ml, spread]
@@ -386,7 +501,7 @@ class ParlayAutoplay:
         ]
         
         if not events_with_spreads:
-            return self._generate_valid_parlay()  # Fallback
+            parlay_type, lines, prob_type = self._generate_multi_event_parlay(); return (parlay_type, lines)  # Fallback
         
         violation_event_id = random.choice(events_with_spreads)
         spreads = self.lines_by_event[violation_event_id]['spreads']
@@ -404,7 +519,7 @@ class ParlayAutoplay:
                 break
         
         if not violation_pair:
-            return self._generate_valid_parlay()  # Fallback
+            parlay_type, lines, prob_type = self._generate_multi_event_parlay(); return (parlay_type, lines)  # Fallback
         
         lines = violation_pair
         
@@ -430,7 +545,7 @@ class ParlayAutoplay:
         ]
         
         if not events_with_totals:
-            return self._generate_valid_parlay()  # Fallback
+            parlay_type, lines, prob_type = self._generate_multi_event_parlay(); return (parlay_type, lines)  # Fallback
         
         violation_event_id = random.choice(events_with_totals)
         totals = self.lines_by_event[violation_event_id]['totals']
@@ -458,7 +573,7 @@ class ParlayAutoplay:
                 break
         
         if not violation_pair:
-            return self._generate_valid_parlay()  # Fallback
+            parlay_type, lines, prob_type = self._generate_multi_event_parlay(); return (parlay_type, lines)  # Fallback
         
         lines = violation_pair
         
@@ -479,7 +594,7 @@ class ParlayAutoplay:
     def _generate_rule5_violation(self) -> Tuple[str, List[Dict]]:
         """Rule 5: Parlay with 13+ legs (exceeds maximum allowed)"""
         if not self.all_market_lines:
-            return self._generate_valid_parlay()  # Fallback
+            parlay_type, lines, prob_type = self._generate_multi_event_parlay(); return (parlay_type, lines)  # Fallback
         
         # Generate parlay with 13-20 legs
         num_legs = random.randint(13, 20)
@@ -501,7 +616,7 @@ class ParlayAutoplay:
         
         # If we still can't get 13+ legs, fallback
         if num_legs < 13:
-            return self._generate_valid_parlay()  # Fallback
+            parlay_type, lines, prob_type = self._generate_multi_event_parlay(); return (parlay_type, lines)  # Fallback
         
         # Randomly select events
         selected_events = random.sample(available_events, num_legs)
@@ -516,8 +631,8 @@ class ParlayAutoplay:
 
     def get_user_token(self) -> Tuple[str, float]:
         """Get user authentication token with timing (cached)"""
-        # Return cached token if available and not too old (< 5 minutes for safety)
-        if self.cached_user_token and (time.time() - self.last_user_auth_time) < 300:
+        # Return cached token if available and not too old
+        if self.cached_user_token and (time.time() - self.last_user_auth_time) < self.token_cache_duration:
             return self.cached_user_token, 0
         
         url = f"{self.base_url}/api/v1/auth/login"
@@ -552,10 +667,10 @@ class ParlayAutoplay:
         # Check cache based on SP credentials
         cache_key = credentials["access_key"]
         if cache_key == self.sp1_credentials["access_key"] and self.cached_sp1_token:
-            if (time.time() - self.last_sp1_auth_time) < 300:  # Token valid for 5 min
+            if (time.time() - self.last_sp1_auth_time) < self.token_cache_duration:
                 return self.cached_sp1_token, 0
         elif cache_key == self.sp2_credentials["access_key"] and self.cached_sp2_token:
-            if (time.time() - self.last_sp2_auth_time) < 300:
+            if (time.time() - self.last_sp2_auth_time) < self.token_cache_duration:
                 return self.cached_sp2_token, 0
         
         url = f"{self.base_url}/partner/auth/login"
@@ -634,6 +749,19 @@ class ParlayAutoplay:
         """SP provides offer with timing"""
         url = f"{self.base_url}/parlay/sp/orders/offers"
         
+        # Generate random realistic odds for each leg
+        leg_odds = []
+        for _ in market_lines:
+            # Generate random American odds
+            # 50% chance of favorite (negative) or underdog (positive)
+            if random.random() < 0.5:
+                # Favorite: -110 to -500
+                leg_odd = random.randint(-500, -110)
+            else:
+                # Underdog: +110 to +500
+                leg_odd = random.randint(110, 500)
+            leg_odds.append(leg_odd)
+        
         valid_until = int((time.time() + 60) * 1e9)
         payload = {
             "parlay_id": parlay_id,
@@ -643,8 +771,8 @@ class ParlayAutoplay:
                     "max_risk": max_risk,
                     "valid_until": valid_until,
                     "estimated_prices": [
-                        {"line_id": line["lineId"], "odds": odds}
-                        for line in market_lines
+                        {"line_id": line["lineId"], "odds": leg_odds[idx]}
+                        for idx, line in enumerate(market_lines)
                     ]
                 }
             ]
@@ -727,18 +855,34 @@ class ParlayAutoplay:
                 # Log available orders for debugging
                 matching_orders = [o for o in orders if o["p_id"] == parlay_id]
                 if matching_orders:
-                    logger.debug(f"Found orders with different status: {[o['status'] for o in matching_orders]}")
+                    statuses = [o['status'] for o in matching_orders]
+                    logger.info(f"⚠️  Parlay {parlay_id} order status: {statuses} (expected 'sent_confirmation')")
+                else:
+                    logger.info(f"⚠️  No orders found for parlay {parlay_id}")
                 return False, 0
             
-            # Calculate probability from odds
-            if odds > 0:
-                probability = 100 / (odds + 100)
-            else:
-                probability = abs(odds) / (abs(odds) + 100)
+            # Calculate target probability from confirmed odds
+            # This ensures the combined leg probabilities match the parlay odds
+            target_combined_prob = self._odds_to_probability(odds)
             
-            # Calculate max_risk
-            decimal_odds = (odds + 100) / 100 if odds > 0 else 100 / abs(odds) + 1
-            max_risk_dollars = (stake / 100) * decimal_odds
+            # Generate leg probabilities that multiply to target
+            leg_probabilities = self._generate_valid_leg_probabilities(len(market_lines), target_combined_prob)
+            
+            # Verify combined probability
+            combined_probability = 1.0
+            for prob in leg_probabilities:
+                combined_probability *= prob
+            
+            # Log probability validation for debugging
+            logger.debug(f"Probability Validation for {parlay_id}:")
+            logger.debug(f"  Odds: {odds} → Target Prob: {target_combined_prob:.8f}")
+            logger.debug(f"  Leg Probabilities: {[f'{p:.8f}' for p in leg_probabilities]}")
+            logger.debug(f"  Combined Probability: {combined_probability:.8f}")
+            logger.debug(f"  Difference: {abs(combined_probability - target_combined_prob):.8f} ({abs(combined_probability - target_combined_prob) / target_combined_prob * 100:.2f}%)")
+            
+            # Calculate max_risk based on combined probability
+            # max_risk = stake * (1/probability - 1) which is the potential payout
+            max_risk_dollars = (stake / 100) * (1 / combined_probability - 1)
             max_risk_cents = int(max_risk_dollars * 100)
             
             # Acknowledge confirmation with order_uuid as query parameter
@@ -750,9 +894,9 @@ class ParlayAutoplay:
                     "lines": [
                         {
                             "line_id": line["lineId"],
-                            "probability": probability
+                            "probability": leg_probabilities[idx]
                         }
-                        for line in market_lines
+                        for idx, line in enumerate(market_lines)
                     ],
                     "max_risk": max_risk_cents,
                     "vig": 0.1
@@ -789,8 +933,8 @@ class ParlayAutoplay:
         
         start_time = time.time()
         
-        # Get random market lines (with chaos testing if enabled)
-        parlay_type, market_lines = self.get_random_market_lines()
+        # Get random market lines (with chaos testing and probability type)
+        parlay_type, market_lines, probability_type = self.get_random_market_lines()
         if not market_lines:
             return TestResult(
                 iteration=iteration,
@@ -799,7 +943,8 @@ class ParlayAutoplay:
                 total_time=time.time() - start_time,
                 thread_id=thread_id,
                 error="No market lines available",
-                parlay_type=parlay_type
+                parlay_type=parlay_type,
+                probability_type="invalid"
             )
         
         # Determine expected result based on parlay type
@@ -809,12 +954,18 @@ class ParlayAutoplay:
         
         actual_leg_count = len(market_lines)
         
-        # Log chaos test info
+        # Check if same-game parlay
+        event_ids = set(line['sportEventId'] for line in market_lines)
+        is_same_game = len(event_ids) == 1
+        prob_label = "VALID" if is_same_game else "INVALID"
+        
+        # Log test info
+        logger.info(f"\n{'─'*100}")
+        logger.info(f"🧪 Test {iteration}: {parlay_type.upper()} | Probability: {prob_label}")
+        logger.info(f"{'─'*100}")
+        logger.info(f"📦 Legs: {actual_leg_count} | Events: {len(event_ids)} | Same-Game: {is_same_game}")
+        
         if self.chaos_mode:
-            logger.info(f"\n{'─'*100}")
-            logger.info(f"🧪 Test {iteration}: {parlay_type.upper()}")
-            logger.info(f"{'─'*100}")
-            logger.info(f"📦 Legs: {actual_leg_count}")
             logger.info(f"🎯 Expected: API should {expected_result.upper()}")
             
             # Show the legs for invalid tests
@@ -960,9 +1111,24 @@ class ParlayAutoplay:
             )
         
         # Step 4: SP provides offer (only for valid parlays in chaos mode)
-        odds = 800  # +800 odds
-        stake = 1000  # $10 in cents
-        offer_success, _ = self.sp_offer(parlay_id, sp_token, odds, 20000, market_lines)
+        # Generate random realistic odds and stake
+        # Odds range: +100 to +1000 (common parlay odds)
+        odds = random.randint(100, 1000)
+        
+        # Stake range: $10 to $500 in cents (1000 to 50000 cents)
+        stake = random.randint(1000, 50000)
+        
+        # Calculate max_risk based on odds and stake
+        if odds > 0:
+            decimal_odds = (odds + 100) / 100
+        else:
+            decimal_odds = 100 / abs(odds) + 1
+        max_risk_dollars = (stake / 100) * decimal_odds
+        max_risk_cents = int(max_risk_dollars * 100)
+        
+        logger.info(f"💰 Random Odds: +{odds} | Stake: ${stake/100:.2f} | Max Risk: ${max_risk_cents/100:.2f}")
+        
+        offer_success, _ = self.sp_offer(parlay_id, sp_token, odds, max_risk_cents, market_lines)
         if not offer_success:
             # Check if we should restart due to token expiration
             should_restart = self.check_token_expiration_and_restart("SP offer failed")
@@ -1330,19 +1496,107 @@ class ParlayAutoplay:
         
         logger.info(f"\n{'='*100}")
 
+def run_autoplay_with_restart(args):
+    """Run autoplay with automatic restart on authentication failures"""
+    restart_count = 0
+    max_restarts = 100  # Prevent infinite loops, but allow many restarts
+    
+    while restart_count < max_restarts:
+        try:
+            logger.info(f"\n{'='*100}")
+            if restart_count > 0:
+                logger.info(f"🔄 RESTART #{restart_count} - Starting fresh autoplay session...")
+            logger.info(f"{'='*100}\n")
+            
+            # Create new autoplay instance
+            autoplay = ParlayAutoplay(
+                mode=args.mode,
+                iterations=args.iterations,
+                concurrency=args.concurrency,
+                delay=args.delay,
+                complete_bets=True,
+                chaos_mode=args.chaos,
+                chaos_invalid_rate=args.chaos_invalid_rate,
+                same_game_rate=args.same_game_rate,
+                min_legs=args.min_legs,
+                max_legs=args.max_legs
+            )
+            
+            # Run the autoplay
+            autoplay.run()
+            
+            # If we get here and running is False, user interrupted - exit gracefully
+            if not autoplay.running:
+                logger.info("\n✅ Session ended by user")
+                autoplay.print_final_results()
+                break
+            
+            # Normal completion (only happens in non-continuous modes)
+            autoplay.print_final_results()
+            break
+            
+        except KeyboardInterrupt:
+            logger.info("\n\n⚠️  Interrupted by user")
+            try:
+                autoplay.print_final_results()
+            except:
+                pass
+            break
+            
+        except Exception as e:
+            error_str = str(e)
+            
+            # Check if it's a token expiration restart (intentional)
+            if "TokenExpirationRestart" in error_str:
+                restart_count += 1
+                logger.warning(f"\n🔄 Token expiration detected - restarting session ({restart_count}/{max_restarts})...")
+                time.sleep(5)  # Wait before restart
+                continue
+            
+            # Log unexpected errors
+            logger.error(f"\n\n❌ Unexpected error: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            
+            # Check if it's an authentication-related error
+            error_str_lower = error_str.lower()
+            if any(keyword in error_str_lower for keyword in ['auth', 'token', 'unauthorized', '401', '403']):
+                restart_count += 1
+                logger.warning(f"\n🔄 Authentication error detected - restarting session ({restart_count}/{max_restarts})...")
+                time.sleep(5)  # Wait before restart
+                continue
+            else:
+                # Non-auth error - still restart in continuous mode
+                if args.mode == 'continuous':
+                    restart_count += 1
+                    logger.warning(f"\n🔄 Error in continuous mode - restarting session ({restart_count}/{max_restarts})...")
+                    time.sleep(5)
+                    continue
+                else:
+                    break
+    
+    if restart_count >= max_restarts:
+        logger.error(f"\n❌ Maximum restart limit ({max_restarts}) reached. Exiting.")
+
 def main():
     """Main entry point with argument parsing"""
     
     parser = argparse.ArgumentParser(
-        description='Parlay Autoplay - Continuous Load Testing System',
+        description='Parlay Autoplay - Continuous Load Testing System with Auto-Restart',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   # Normal mode - 10 sequential tests with 1s delay
   python parlay_autoplay.py --mode normal --iterations 10 --delay 1
 
-  # Continuous mode - run until Ctrl+C
+  # Continuous mode - run until Ctrl+C (auto-restarts on errors)
   python parlay_autoplay.py --mode continuous --delay 0.5
+
+  # 2-leg parlays only (for testing same-game valid probability)
+  python parlay_autoplay.py --mode continuous --min-legs 2 --max-legs 2 --same-game-rate 1.0
+
+  # 100% multi-event parlays (invalid probability)
+  python parlay_autoplay.py --mode continuous --same-game-rate 0.0
 
   # Aggressive mode - 20 iterations with 5 concurrent threads
   python parlay_autoplay.py --mode aggressive --iterations 20 --concurrency 5
@@ -1365,6 +1619,12 @@ Examples:
                        help='Enable chaos testing mode (mix valid/invalid parlays)')
     parser.add_argument('--chaos-invalid-rate', type=float, default=0.5,
                        help='Percentage of invalid parlays in chaos mode (default: 0.5)')
+    parser.add_argument('--same-game-rate', type=float, default=0.5,
+                       help='Percentage of same-game parlays vs multi-event (default: 0.5)')
+    parser.add_argument('--min-legs', type=int, default=2,
+                       help='Minimum number of legs per parlay (default: 2)')
+    parser.add_argument('--max-legs', type=int, default=12,
+                       help='Maximum number of legs per parlay (default: 12)')
     
     args = parser.parse_args()
     
@@ -1379,29 +1639,16 @@ Examples:
         logger.info("🎰 PARLAY AUTOPLAY - CONTINUOUS LOAD TESTING SYSTEM")
         logger.info("="*100)
         logger.info("🏁 Full bet completion: ENABLED (creates, offers, confirms, accepts)")
+    
+    if args.mode == 'continuous':
+        logger.info("🔄 Auto-restart: ENABLED (restarts on auth/token errors)")
+    
+    # Show configuration
+    logger.info(f"📊 Parlay Config: {args.min_legs}-{args.max_legs} legs | Same-Game: {int(args.same_game_rate * 100)}%")
     logger.info("="*100)
     
-    # Create and run autoplay
-    autoplay = ParlayAutoplay(
-        mode=args.mode,
-        iterations=args.iterations,
-        concurrency=args.concurrency,
-        delay=args.delay,
-        complete_bets=True,  # Always complete bets
-        chaos_mode=args.chaos,
-        chaos_invalid_rate=args.chaos_invalid_rate
-    )
-    
-    try:
-        autoplay.run()
-    except KeyboardInterrupt:
-        logger.info("\n\n⚠️  Interrupted by user")
-        autoplay.running = False
-        autoplay.print_final_results()
-    except Exception as e:
-        logger.error(f"\n\n❌ Unexpected error: {e}")
-        import traceback
-        logger.error(traceback.format_exc())
+    # Run with auto-restart wrapper
+    run_autoplay_with_restart(args)
     
     logger.info("\n✅ Autoplay session ended\n")
 
