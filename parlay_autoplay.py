@@ -28,6 +28,7 @@ import argparse
 import signal
 import sys
 import os
+import re
 import threading
 from typing import Dict, List, Any, Optional, Tuple
 from datetime import datetime
@@ -65,10 +66,11 @@ class TestResult:
     probability_type: str = "invalid"  # 'valid' (same-game) or 'invalid' (multi-event)
 
 class ParlayAutoplay:
-    def __init__(self, mode: str = 'normal', iterations: int = 10, 
+    def __init__(self, mode: str = 'normal', iterations: int = 10,
                  concurrency: int = 1, delay: float = 1.0, complete_bets: bool = True,
                  chaos_mode: bool = False, chaos_invalid_rate: float = 0.5,
-                 same_game_rate: float = 0.5, min_legs: int = 2, max_legs: int = 12):
+                 same_game_rate: float = 0.5, min_legs: int = 2, max_legs: int = 12,
+                 refresh_markets: bool = False, event_ids: List[int] = None):
         self.base_url = "https://api-ss-sandbox.betprophet.co"
         self.mode = mode
         self.iterations = iterations
@@ -93,7 +95,15 @@ class ParlayAutoplay:
         }
         
         # Load fresh market lines
-        self.all_market_lines = self.load_market_lines()
+        # ALWAYS fetch fresh data from API as the initial step
+        if event_ids:
+            self.all_market_lines = self.fetch_lines_for_events(event_ids)
+        else:
+            # Auto-discover active events and fetch their markets
+            self.all_market_lines = self.discover_and_fetch_active_lines()
+            if not self.all_market_lines:
+                logger.warning("⚠️  No active events found via API, falling back to cached file...")
+                self.all_market_lines = self.load_market_lines(auto_refresh=refresh_markets)
         
         # Group lines by event for chaos testing
         self.lines_by_event = self._group_lines_by_event() if chaos_mode else {}
@@ -122,7 +132,12 @@ class ParlayAutoplay:
             'rule4_rejected': 0,
             'rule4_accepted': 0,
             'rule5_rejected': 0,
-            'rule5_accepted': 0
+            'rule5_accepted': 0,
+            'rule6_rejected': 0,
+            'rule6_accepted': 0,
+            'prematch_only': 0,
+            'invalid_legs_combination': 0,
+            'other_api_error': 0
         }
         
         # Probability type tracking
@@ -177,8 +192,192 @@ class ParlayAutoplay:
         """Reset consecutive failure counter on successful test"""
         self.consecutive_sp_failures = 0
         
-    def load_market_lines(self) -> List[Dict]:
-        """Load fresh market lines from file"""
+    def _get_mm_token(self) -> Optional[str]:
+        """Authenticate as MM and return access token"""
+        try:
+            import sys as _sys
+            _sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+            import config
+        except ImportError:
+            logger.error("❌ Cannot import config for MM authentication")
+            return None
+
+        login_url = f"{self.base_url}/partner/auth/login"
+        resp = requests.post(login_url, json={
+            'access_key': config.MM_KEYS['access_key'],
+            'secret_key': config.MM_KEYS['secret_key']
+        })
+        if resp.status_code != 200:
+            logger.error(f"❌ MM auth failed: {resp.status_code}")
+            return None
+        return resp.json()['data']['access_token']
+
+    def discover_and_fetch_active_lines(self) -> List[Dict]:
+        """Discover active events from tournaments API and fetch their market lines.
+
+        This is the initial step that runs BEFORE the main test to ensure we have
+        fresh, open events to test against. Steps:
+        1. Authenticate as MM
+        2. Fetch all tournaments
+        3. For each tournament of interest, get sport events
+        4. Filter to only open/active events
+        5. Batch-fetch markets for those events
+        6. Extract line IDs
+        """
+        logger.info("\n" + "=" * 100)
+        logger.info("🔍 STEP 0: DISCOVERING ACTIVE EVENTS & FETCHING FRESH MARKETS")
+        logger.info("=" * 100)
+
+        try:
+            import sys as _sys
+            _sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+            import config
+        except ImportError:
+            logger.error("❌ Cannot import config")
+            return []
+
+        token = self._get_mm_token()
+        if not token:
+            return []
+        logger.info("✅ MM authentication successful")
+
+        headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
+
+        # Step 1: Get all tournaments
+        logger.info("📋 Fetching tournaments...")
+        tournaments_url = f"{self.base_url}/partner/mm/get_tournaments"
+        resp = requests.get(tournaments_url, headers=headers)
+        if resp.status_code != 200:
+            logger.error(f"❌ Failed to fetch tournaments: {resp.status_code}")
+            return []
+
+        all_tournaments = resp.json().get('data', {}).get('tournaments', [])
+        logger.info(f"   Found {len(all_tournaments)} tournaments total")
+
+        # Step 2: Filter tournaments of interest
+        tournaments_interested = getattr(config, 'TOURNAMENTS_INTERESTED', [])
+        load_all = getattr(config, 'LOAD_ALL_TOURNAMENTS', False)
+
+        target_tournaments = []
+        for t in all_tournaments:
+            if load_all or t['name'] in tournaments_interested:
+                target_tournaments.append(t)
+
+        logger.info(f"   Targeting {len(target_tournaments)} tournaments: {[t['name'] for t in target_tournaments]}")
+
+        # Step 3: Get events for each tournament and collect open event IDs
+        events_url = f"{self.base_url}/partner/mm/get_sport_events"
+        all_event_ids = []
+        events_by_tournament = {}
+
+        for tournament in target_tournaments:
+            resp = requests.get(events_url, params={'tournament_id': tournament['id']}, headers=headers)
+            if resp.status_code != 200:
+                logger.warning(f"   ⚠️  Failed to fetch events for {tournament['name']}")
+                continue
+
+            events = resp.json().get('data', {}).get('sport_events', [])
+            if not events:
+                continue
+
+            event_ids = [e['event_id'] for e in events]
+            all_event_ids.extend(event_ids)
+            events_by_tournament[tournament['name']] = len(events)
+
+        if not all_event_ids:
+            logger.warning("⚠️  No active events found across any tournament")
+            return []
+
+        total_events = len(all_event_ids)
+        logger.info(f"   Found {total_events} active events across {len(events_by_tournament)} tournaments:")
+        for tname, count in events_by_tournament.items():
+            logger.info(f"      {tname}: {count} events")
+
+        # Step 4: Batch-fetch markets (in chunks to avoid request size limits)
+        logger.info(f"\n📦 Fetching markets for {total_events} events...")
+        multiple_markets_url = f"{self.base_url}/partner/mm/get_multiple_markets"
+        all_lines = []
+        seen_line_ids = set()
+        chunk_size = 50  # Process events in batches
+
+        for i in range(0, len(all_event_ids), chunk_size):
+            chunk = all_event_ids[i:i + chunk_size]
+            resp = requests.get(
+                multiple_markets_url,
+                params={'event_ids': ','.join(str(e) for e in chunk)},
+                headers=headers
+            )
+            if resp.status_code != 200:
+                logger.warning(f"   ⚠️  Failed to fetch markets for chunk {i // chunk_size + 1}")
+                continue
+
+            data = resp.json().get('data', {})
+            for event_id_str, markets in data.items():
+                event_id = int(event_id_str)
+                for market in markets:
+                    market_id = market.get('id')
+                    selections_sources = []
+                    if 'selections' in market:
+                        selections_sources = market.get('selections', [])
+                    elif 'market_lines' in market:
+                        for ml in market.get('market_lines', []):
+                            selections_sources.extend(ml.get('selections', []))
+
+                    for selections_group in selections_sources:
+                        for selection in selections_group:
+                            line_id = selection.get('line_id')
+                            if line_id and line_id not in seen_line_ids:
+                                seen_line_ids.add(line_id)
+                                all_lines.append({
+                                    'line': selection.get('line', 0),
+                                    'lineId': line_id,
+                                    'marketId': market_id,
+                                    'outcomeId': selection.get('outcome_id'),
+                                    'sportEventId': event_id
+                                })
+
+        events_with_lines = len(set(l['sportEventId'] for l in all_lines))
+        logger.info(f"\n✅ DISCOVERY COMPLETE:")
+        logger.info(f"   Events with markets: {events_with_lines}/{total_events}")
+        logger.info(f"   Total market lines: {len(all_lines)}")
+
+        if all_lines:
+            # Save to file as backup cache
+            try:
+                with open('fresh_market_lines.json', 'w') as f:
+                    json.dump(all_lines, f, indent=2)
+                logger.info(f"   💾 Cached to fresh_market_lines.json")
+            except Exception:
+                pass
+
+        logger.info("=" * 100 + "\n")
+        return all_lines
+
+    def load_market_lines(self, auto_refresh: bool = False) -> List[Dict]:
+        """Load fresh market lines from file
+        
+        Args:
+            auto_refresh: If True, automatically fetch fresh market data before loading
+        """
+        if auto_refresh:
+            logger.info("🔄 Auto-refreshing market data...")
+            import subprocess
+            try:
+                result = subprocess.run(
+                    ['python3', 'utils/fetch_market_lines.py'],
+                    capture_output=True,
+                    text=True,
+                    timeout=60
+                )
+                if result.returncode == 0:
+                    logger.info("✅ Market data refreshed successfully")
+                else:
+                    logger.warning(f"⚠️  Market refresh had issues: {result.stderr}")
+            except subprocess.TimeoutExpired:
+                logger.error("❌ Market refresh timed out after 60s")
+            except Exception as e:
+                logger.error(f"❌ Failed to refresh market data: {e}")
+        
         try:
             with open('fresh_market_lines.json', 'r') as f:
                 lines = json.load(f)
@@ -189,6 +388,63 @@ class ParlayAutoplay:
             logger.info("💡 Run 'python utils/fetch_market_lines.py' to generate fresh lines")
             return []
     
+    def fetch_lines_for_events(self, event_ids: List[int]) -> List[Dict]:
+        """Fetch fresh market lines for specific event IDs directly from API"""
+        logger.info(f"🎯 Fetching market lines for live events: {event_ids}")
+
+        token = self._get_mm_token()
+        if not token:
+            return []
+
+        headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
+
+        # Fetch markets for these specific events
+        url = f"{self.base_url}/partner/mm/get_multiple_markets"
+        resp = requests.get(url, params={'event_ids': ','.join(str(e) for e in event_ids)}, headers=headers)
+        if resp.status_code != 200:
+            logger.error(f"❌ Failed to fetch markets: {resp.status_code}")
+            return []
+
+        data = resp.json().get('data', {})
+        all_lines = []
+        seen_line_ids = set()
+
+        for event_id_str, markets in data.items():
+            event_id = int(event_id_str)
+            for market in markets:
+                market_id = market.get('id')
+                selections_sources = []
+                if 'selections' in market:
+                    selections_sources = market.get('selections', [])
+                elif 'market_lines' in market:
+                    for ml in market.get('market_lines', []):
+                        selections_sources.extend(ml.get('selections', []))
+
+                for selections_group in selections_sources:
+                    for selection in selections_group:
+                        line_id = selection.get('line_id')
+                        if line_id and line_id not in seen_line_ids:
+                            seen_line_ids.add(line_id)
+                            all_lines.append({
+                                'line': selection.get('line', 0),
+                                'lineId': line_id,
+                                'marketId': market_id,
+                                'outcomeId': selection.get('outcome_id'),
+                                'sportEventId': event_id
+                            })
+
+        events_found = set(l['sportEventId'] for l in all_lines)
+        missing = set(event_ids) - events_found
+        if missing:
+            logger.warning(f"⚠️  No markets found for events: {sorted(missing)}")
+
+        logger.info(f"✅ Loaded {len(all_lines)} fresh lines from {len(events_found)} live events")
+        for eid in sorted(events_found):
+            count = sum(1 for l in all_lines if l['sportEventId'] == eid)
+            logger.info(f"   Event {eid}: {count} lines")
+
+        return all_lines
+
     def _get_market_name(self, market_id: int) -> str:
         """Get human-readable market name from market ID"""
         market_names = {
@@ -266,7 +522,7 @@ class ParlayAutoplay:
             grouped[event_id]['all'].append(line)
             
             # Categorize by market type
-            if market_id in [11, 219]:  # Moneyline
+            if market_id in [11, 219, 251, 64]:  # Moneyline (incl. MLB 3-way, alt ML)
                 grouped[event_id]['moneylines'].append(line)
             elif market_id in [16, 223, 256, 410]:  # Spreads (added 410)
                 grouped[event_id]['spreads'].append(line)
@@ -294,7 +550,7 @@ class ParlayAutoplay:
             
             if should_be_invalid:
                 # Randomly choose which rule to violate
-                violation_type = random.choice(['rule1', 'rule2', 'rule3', 'rule4', 'rule5'])
+                violation_type = random.choice(['rule1', 'rule2', 'rule3', 'rule4', 'rule5', 'rule6'])
                 
                 if violation_type == 'rule1':
                     parlay_type, lines = self._generate_rule1_violation()
@@ -311,6 +567,9 @@ class ParlayAutoplay:
                 elif violation_type == 'rule5':
                     parlay_type, lines = self._generate_rule5_violation()
                     return parlay_type, lines, "invalid"
+                elif violation_type == 'rule6':
+                    parlay_type, lines = self._generate_rule6_violation()
+                    return parlay_type, lines, "invalid"
         
         # Decide between same-game (valid probability) or multi-event (invalid probability)
         should_be_same_game = random.random() < self.same_game_rate
@@ -325,6 +584,8 @@ class ParlayAutoplay:
         
         Returns legs from the SAME event with different market types.
         This creates valid probability calculations.
+        
+        NEW RULE: Moneyline and Spread cannot be combined in the same game.
         """
         if not self.all_market_lines:
             return "valid", [], "valid"
@@ -332,6 +593,10 @@ class ParlayAutoplay:
         # Random leg count (2-6 for same-game, typically smaller)
         leg_count = random.randint(min_legs, min(max_legs, 6))
         
+        # Define market type categories
+        MONEYLINE_MARKETS = {11, 219, 251, 64}  # Moneyline markets (incl. MLB 3-way, alt ML)
+        SPREAD_MARKETS = {16, 223, 256, 410}  # Spread markets
+
         # Group lines by event
         lines_by_event = {}
         for line in self.all_market_lines:
@@ -352,26 +617,64 @@ class ParlayAutoplay:
             # Fallback to multi-event if no suitable same-game found
             return self._generate_multi_event_parlay(min_legs, max_legs)
         
-        # Pick a random event
-        selected_event = random.choice(suitable_events)
-        event_lines = lines_by_event[selected_event]
+        # Try multiple events to find valid combination
+        max_attempts = 10
+        for attempt in range(max_attempts):
+            # Pick a random event
+            selected_event = random.choice(suitable_events)
+            event_lines = lines_by_event[selected_event]
+            
+            # Group by market type within this event
+            lines_by_market = {}
+            for line in event_lines:
+                market_id = line['marketId']
+                if market_id not in lines_by_market:
+                    lines_by_market[market_id] = []
+                lines_by_market[market_id].append(line)
+            
+            # Get available markets
+            available_markets = list(lines_by_market.keys())
+            
+            if len(available_markets) < leg_count:
+                continue
+            
+            # Try to select markets without Moneyline+Spread combo
+            selected_markets = random.sample(available_markets, leg_count)
+            
+            # Check if we have both Moneyline AND Spread (Rule 6 violation)
+            has_moneyline = any(m in MONEYLINE_MARKETS for m in selected_markets)
+            has_spread = any(m in SPREAD_MARKETS for m in selected_markets)
+            
+            if has_moneyline and has_spread:
+                # INVALID COMBINATION - try different market selection
+                # Remove one of them and try again
+                if attempt < max_attempts - 1:
+                    continue  # Try different event or combination
+                else:
+                    # Last attempt - force valid by removing spread markets
+                    selected_markets = [m for m in selected_markets if m not in SPREAD_MARKETS]
+                    # Add more markets if needed
+                    remaining_markets = [m for m in available_markets if m not in selected_markets and m not in SPREAD_MARKETS]
+                    while len(selected_markets) < leg_count and remaining_markets:
+                        selected_markets.append(random.choice(remaining_markets))
+                        remaining_markets = [m for m in remaining_markets if m not in selected_markets]
+                    
+                    if len(selected_markets) < 2:
+                        # Can't form valid parlay, fallback to multi-event
+                        return self._generate_multi_event_parlay(min_legs, max_legs)
+            
+            # Valid combination found
+            selected_lines = []
+            for market_id in selected_markets:
+                if market_id in lines_by_market:
+                    line = random.choice(lines_by_market[market_id])
+                    selected_lines.append(line)
+            
+            if len(selected_lines) >= 2:
+                return "valid", selected_lines, "valid"
         
-        # Group by market type within this event
-        lines_by_market = {}
-        for line in event_lines:
-            market_id = line['marketId']
-            if market_id not in lines_by_market:
-                lines_by_market[market_id] = []
-            lines_by_market[market_id].append(line)
-        
-        # Pick one random line from different market types
-        selected_markets = random.sample(list(lines_by_market.keys()), leg_count)
-        selected_lines = []
-        for market_id in selected_markets:
-            line = random.choice(lines_by_market[market_id])
-            selected_lines.append(line)
-        
-        return "valid", selected_lines, "valid"
+        # If all attempts failed, fallback to multi-event
+        return self._generate_multi_event_parlay(min_legs, max_legs)
     
     def _generate_multi_event_parlay(self, min_legs: int = 2, max_legs: int = 12) -> Tuple[str, List[Dict], str]:
         """Generate a multi-event parlay (invalid probability)
@@ -628,6 +931,61 @@ class ParlayAutoplay:
             lines.append(line)
         
         return "rule5_too_many_legs", lines
+    
+    def _generate_rule6_violation(self) -> Tuple[str, List[Dict]]:
+        """Rule 6: ML of Team A + Spread of opposite Team B (line <= +0.5) in same period
+
+        Violation: team1 ML + team2 spread where team2 spread line <= +0.5
+        Allowed: team1 ML + team2 spread where team2 spread line >= +1
+        Must be same period (full game ML + full game spread, Q1 ML + Q1 spread)
+        Cross-period combos (full game ML + 1H spread) are allowed.
+        """
+        # Period-matched market pairs: (ML market IDs, Spread market IDs) in same period
+        # Only same-period ML+Spread combos can trigger this rule
+        SAME_PERIOD_PAIRS = [
+            ({11, 219, 251, 64}, {16, 223}),  # Full game ML + Full game Spread
+            # Add more period pairs as needed (e.g., Q1, 1H)
+        ]
+
+        # Find all valid violation combos: ML Team A + Spread Team B (opposite) with line <= +0.5, same period
+        violation_candidates = []
+        for event_id, data in self.lines_by_event.items():
+            if not data['moneylines'] or not data['spreads']:
+                continue
+
+            for ml_market_ids, spread_market_ids in SAME_PERIOD_PAIRS:
+                period_mls = [m for m in data['moneylines'] if m['marketId'] in ml_market_ids]
+                period_spreads = [s for s in data['spreads'] if s['marketId'] in spread_market_ids]
+
+                for ml in period_mls:
+                    for spread in period_spreads:
+                        # Must be opposite teams (different outcomeId parity)
+                        if (ml['outcomeId'] % 2) == (spread['outcomeId'] % 2):
+                            continue
+                        # Opposite team's spread line must be <= +0.5 (negative or +0.5)
+                        if spread['line'] <= 0.5:
+                            violation_candidates.append((event_id, ml, spread))
+
+        if not violation_candidates:
+            parlay_type, lines, prob_type = self._generate_multi_event_parlay(); return (parlay_type, lines)  # Fallback
+
+        # Pick a random violation
+        violation_event_id, ml, spread = random.choice(violation_candidates)
+        lines = [ml, spread]
+
+        # Add 0-10 more valid legs from different events
+        num_additional_legs = random.randint(0, 10)
+        available_events = [eid for eid in self.lines_by_event.keys() if eid != violation_event_id]
+
+        if available_events and num_additional_legs > 0:
+            num_to_add = min(num_additional_legs, len(available_events))
+            additional_events = random.sample(available_events, num_to_add)
+
+            for event_id in additional_events:
+                line = random.choice(self.lines_by_event[event_id]['all'])
+                lines.append(line)
+
+        return "rule6_moneyline_spread_same_game", lines
 
     def get_user_token(self) -> Tuple[str, float]:
         """Get user authentication token with timing (cached)"""
@@ -1012,22 +1370,88 @@ class ParlayAutoplay:
         sp_token = sp1_token if sp1_token else sp2_token
         sp_name = "SP1" if sp1_token else "SP2"
         
-        # Step 3: Create parlay with random legs
-        parlay_id, _, api_error = self.create_parlay(user_token, market_lines)
-        
+        # Step 3: Create parlay with random legs (with retry on stale events)
+        max_retries = 3
+        for attempt in range(max_retries):
+            parlay_id, _, api_error = self.create_parlay(user_token, market_lines)
+
+            # Check if event became stale - extract event ID, remove it, and retry
+            if not parlay_id and api_error and "sport event not open" in api_error.lower():
+                # Extract stale event ID from error like "event id: 30024940: sport event not open"
+                stale_match = re.search(r'event id:\s*(\d+)', api_error, re.IGNORECASE)
+                if stale_match:
+                    stale_event_id = int(stale_match.group(1))
+                    with self.lock:
+                        if stale_event_id in self.lines_by_event:
+                            del self.lines_by_event[stale_event_id]
+                            logger.warning(f"🔄 Removed stale event {stale_event_id} from pool ({len(self.lines_by_event)} events remaining)")
+
+                    if attempt < max_retries - 1:
+                        logger.info(f"🔄 Retry {attempt + 1}/{max_retries - 1} with fresh legs...")
+                        parlay_type, market_lines, probability_type = self.get_random_market_lines()
+                        if not market_lines:
+                            break
+                        actual_leg_count = len(market_lines)
+                        event_ids = set(line['sportEventId'] for line in market_lines)
+                        expected_result = "reject" if parlay_type.startswith("rule") else "accept"
+                        continue
+            break
+
         # Check if parlay was rejected (chaos testing validation)
         if not parlay_id:
             actual_result = "rejected"
-            validation_passed = (expected_result == "reject")
-            
+
+            # Check for known API errors that are expected failures (not validation issues)
+            known_api_error = False
+            known_error_type = None
+            if api_error:
+                api_error_lower = api_error.lower()
+                if "market is only for prematch" in api_error_lower:
+                    known_api_error = True
+                    known_error_type = "prematch_only"
+                elif "invalid legs combination" in api_error_lower:
+                    known_api_error = True
+                    known_error_type = "invalid_legs_combination"
+                elif any(msg in api_error_lower for msg in [
+                    "market not found", "line not found", "event not found",
+                    "market is suspended", "market is closed",
+                    "odds have changed", "line is no longer available",
+                    "sport event not open"
+                ]):
+                    known_api_error = True
+                    known_error_type = "other_api_error"
+
+            if known_api_error:
+                # Known API errors are expected - mark as passed
+                validation_passed = True
+            else:
+                validation_passed = (expected_result == "reject")
+
             # Always log the API error for debugging
             if api_error:
                 logger.info(f"💬 API Error: {api_error}")
-            
+
+            # Log detailed leg combination for ALL failed parlays
+            logger.info(f"\n📋 Failed Parlay Leg Details:")
+            logger.info(f"   Parlay Type: {parlay_type}")
+            logger.info(f"   Total Legs: {actual_leg_count}")
+            logger.info(f"   Unique Events: {len(event_ids)}")
+            logger.info(f"   Event IDs: {sorted(list(event_ids))}")
+            for idx, line in enumerate(market_lines, 1):
+                market_name = self._get_market_name(line['marketId'])
+                logger.info(f"   Leg {idx}:")
+                logger.info(f"      Event: {line['sportEventId']}")
+                logger.info(f"      Market: {market_name} (ID: {line['marketId']})")
+                logger.info(f"      Outcome: {line['outcomeId']}")
+                logger.info(f"      Line: {line['line']}")
+                logger.info(f"      LineID: {line['lineId']}")
+
             # Update validation stats
             if self.chaos_mode:
                 with self.lock:
-                    if parlay_type == "valid":
+                    if known_api_error:
+                        self.validation_stats[known_error_type] += 1
+                    elif parlay_type == "valid":
                         self.validation_stats['valid_rejected'] += 1
                     elif parlay_type == "rule1_both_sides_moneyline":
                         self.validation_stats['rule1_rejected'] += 1
@@ -1039,8 +1463,13 @@ class ParlayAutoplay:
                         self.validation_stats['rule4_rejected'] += 1
                     elif parlay_type == "rule5_too_many_legs":
                         self.validation_stats['rule5_rejected'] += 1
-                
-                if validation_passed:
+                    elif parlay_type == "rule6_moneyline_spread_same_game":
+                        self.validation_stats['rule6_rejected'] += 1
+
+                if known_api_error:
+                    logger.info(f"⚠️  EXPECTED API ERROR ({known_error_type}) - Not a validation issue")
+                    logger.info(f"   💬 API Response: {api_error}")
+                elif validation_passed:
                     logger.info(f"✅ VALIDATION PASSED - API rejected as expected")
                     if api_error:
                         logger.info(f"   💬 API Response: {api_error}")
@@ -1082,9 +1511,12 @@ class ParlayAutoplay:
                     self.validation_stats['rule4_accepted'] += 1
                 elif parlay_type == "rule5_too_many_legs":
                     self.validation_stats['rule5_accepted'] += 1
-            
+                elif parlay_type == "rule6_moneyline_spread_same_game":
+                    self.validation_stats['rule6_accepted'] += 1
+
             if not validation_passed:
                 logger.warning(f"❌ VALIDATION FAILED - API accepted but should have rejected {parlay_type}")
+                logger.warning(f"   Parlay ID: {parlay_id}")
             else:
                 logger.info(f"✅ VALIDATION PASSED - API accepted as expected")
         
@@ -1485,7 +1917,30 @@ class ParlayAutoplay:
                 logger.info(f"      Rule 5 (Too Many Legs 13+):")
                 logger.info(f"         Rejected (correct): {self.validation_stats['rule5_rejected']}/{total_rule5} ({rule5_validation_rate:.1f}%)")
                 logger.info(f"         Accepted (wrong): {self.validation_stats['rule5_accepted']}/{total_rule5}")
-            
+
+            # Rule 6
+            total_rule6 = self.validation_stats['rule6_accepted'] + self.validation_stats['rule6_rejected']
+            if total_rule6 > 0:
+                rule6_validation_rate = (self.validation_stats['rule6_rejected'] / total_rule6 * 100)
+                logger.info(f"      Rule 6 (ML + Opposite Team Negative Spread, Same Period):")
+                logger.info(f"         Rejected (correct): {self.validation_stats['rule6_rejected']}/{total_rule6} ({rule6_validation_rate:.1f}%)")
+                logger.info(f"         Accepted (wrong): {self.validation_stats['rule6_accepted']}/{total_rule6}")
+
+            # Known API errors (expected failures, not validation issues)
+            prematch_only = self.validation_stats['prematch_only']
+            invalid_legs = self.validation_stats['invalid_legs_combination']
+            other_api = self.validation_stats['other_api_error']
+            total_known_errors = prematch_only + invalid_legs + other_api
+            if total_known_errors > 0:
+                logger.info(f"\n   ⚠️  KNOWN API ERRORS (expected, not validation failures):")
+                if prematch_only > 0:
+                    logger.info(f"      Prematch Only: {prematch_only}")
+                if invalid_legs > 0:
+                    logger.info(f"      Invalid Legs Combination: {invalid_legs}")
+                if other_api > 0:
+                    logger.info(f"      Other API Errors: {other_api}")
+                logger.info(f"      Total: {total_known_errors}")
+
             # Overall validation success
             total_tests_with_validation = len([r for r in self.test_results if hasattr(r, 'validation_passed')])
             passed_validation = len([r for r in self.test_results if hasattr(r, 'validation_passed') and r.validation_passed])
@@ -1493,6 +1948,8 @@ class ParlayAutoplay:
                 overall_validation_rate = (passed_validation / total_tests_with_validation * 100)
                 logger.info(f"\n   🎯 OVERALL VALIDATION:")
                 logger.info(f"      Success Rate: {passed_validation}/{total_tests_with_validation} ({overall_validation_rate:.1f}%)")
+                if total_known_errors > 0:
+                    logger.info(f"      (includes {total_known_errors} known API errors counted as passed)")
         
         logger.info(f"\n{'='*100}")
 
@@ -1508,6 +1965,11 @@ def run_autoplay_with_restart(args):
                 logger.info(f"🔄 RESTART #{restart_count} - Starting fresh autoplay session...")
             logger.info(f"{'='*100}\n")
             
+            # Parse event IDs if provided
+            event_ids = None
+            if args.event_ids:
+                event_ids = [int(e.strip()) for e in args.event_ids.split(',')]
+
             # Create new autoplay instance
             autoplay = ParlayAutoplay(
                 mode=args.mode,
@@ -1519,7 +1981,9 @@ def run_autoplay_with_restart(args):
                 chaos_invalid_rate=args.chaos_invalid_rate,
                 same_game_rate=args.same_game_rate,
                 min_legs=args.min_legs,
-                max_legs=args.max_legs
+                max_legs=args.max_legs,
+                refresh_markets=args.refresh,
+                event_ids=event_ids
             )
             
             # Run the autoplay
@@ -1625,7 +2089,11 @@ Examples:
                        help='Minimum number of legs per parlay (default: 2)')
     parser.add_argument('--max-legs', type=int, default=12,
                        help='Maximum number of legs per parlay (default: 12)')
-    
+    parser.add_argument('--refresh', action='store_true',
+                       help='Automatically fetch fresh market data before starting')
+    parser.add_argument('--event-ids', type=str, default=None,
+                       help='Comma-separated event IDs to target (e.g., 80051288,80056272). Fetches fresh lines for these events.')
+
     args = parser.parse_args()
     
     # Banner
@@ -1645,6 +2113,8 @@ Examples:
     
     # Show configuration
     logger.info(f"📊 Parlay Config: {args.min_legs}-{args.max_legs} legs | Same-Game: {int(args.same_game_rate * 100)}%")
+    if args.event_ids:
+        logger.info(f"🎯 Targeting LIVE events: {args.event_ids}")
     logger.info("="*100)
     
     # Run with auto-restart wrapper

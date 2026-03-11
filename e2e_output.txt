@@ -1,0 +1,1654 @@
+
+################################################################################
+# END-TO-END PARLAY FLOW TESTING WITH ODDS VALIDATION
+# Timestamp: 2025-10-28 11:50:08
+################################################################################
+
+================================================================================
+📤 USER LOGIN
+================================================================================
+Method: POST
+URL: https://api-ss-sandbox.betprophet.co/api/v1/auth/login
+Payload:
+{
+  "device_id": "e9594640-f309-11ec-9ad8-b75190c1f3c5",
+  "email": "lam.tran+usr004@betprophet.co",
+  "password": "Kh0ngbiet1"
+}
+
+================================================================================
+📥 USER LOGIN RESPONSE
+================================================================================
+Status Code: 200
+Headers: {'Content-Type': 'application/json; charset=utf-8', 'Content-Length': '1496', 'Connection': 'keep-alive', 'Date': 'Tue, 28 Oct 2025 04:50:09 GMT', 'X-Krakend-Completed': 'true', 'Cache-Control': 'public, max-age=3600', 'Vary': 'Origin, Origin', 'X-Krakend': 'Version 1.4.2', 'X-Cache': 'Miss from cloudfront', 'Via': '1.1 743dabf2fdbfd64c0bd7adf3cea9dbec.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'HIO52-P4', 'X-Amz-Cf-Id': 'lU82esI3cIgJFU0pEPJp6T8uveLzxYjuwAVKMQQFNN1qs84E0lLykw=='}
+Body:
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIsImtpZCI6InNpbTIifQ.eyJhY2NvdW50VHlwZSI6MSwiZXhwIjoxNzYxNjMwNjA5LCJleHRyYU9ubGluZVRpbWUiOjAsImlzT3RwRXhwaXJlZCI6ZmFsc2UsImlzU3VzcGVuZGVkIjpmYWxzZSwiaXNzIjoiaHR0cDovL21vdGhlcnNoaXAubW90aGVyc2hpcC1zYW5kYm94IiwianRpIjoiMWM4N2E1ZDktM2M4NC00YWU5LWJlMDktZTM3YTJmZDE5YTVkIiwia2JhQW5zd2Vyc0luZm8iOiJOL0EiLCJreWNJbmZvIjoiU3VjY2VzcyIsInBlbmRpbmdCeUFkbWluIjpmYWxzZSwicHVzaGVySW5mbyI6eyJhdXRoQ2hhbm5lbCI6InVzZXIuYXV0aGVudGljYXRpb24uMWM4N2E1ZDktM2M4NC00YWU5LWJlMDktZTM3YTJmZDE5YTVkIiwiYmFsYW5jZVVwZGF0ZWRFdmVudCI6IndhbGxldC5iYWxhbmNlLnVwZGF0ZWQiLCJjbHVzdGVyIjoibXQxIiwiaWQiOiJjMjBmYTM2ZmJjM2MzYzMwOGZmYSIsImluZm9DaGFubmVsIjoidXNlci5pbmZvcm1hdGlvbi5lZjVjM2JlMy1hZDRkLTRlMGYtYWNlNy05NzA1NjkwYzgyNmUiLCJpbmZvcm1hdGlvblVwZGF0ZWRFdmVudCI6InVzZXIuaW5mb3JtYXRpb24udXBkYXRlZCIsImtiYUNoYWxsZW5nZVF1ZXN0aW9uc0V2ZW50IjoidXNlci5rYmEuY2hhbGxlbmdlIiwic2Vzc2lvblRlcm1pbmF0ZWRFdmVudCI6InNlc3Npb24udGVybWluYXRlZCJ9LCJyZWdpb24iOiJOWSIsInN1YiI6ImxhbS50cmFuK3VzcjAwNEBiZXRwcm9waGV0LmNvIiwidXNlcklkIjoiZWY1YzNiZTMtYWQ0ZC00ZTBmLWFjZTctOTcwNTY5MGM4MjZlIn0.CZ4h_hDqR7rbjiGG5z_ul4vTaQNRtUPRdPV4oFBOt9U",
+  "exp": 1761630609,
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsImtpZCI6InNpbTIifQ.eyJleHAiOjE3NjQyMTkwMDksImlzcyI6Imh0dHA6Ly9tb3RoZXJzaGlwLm1vdGhlcnNoaXAtc2FuZGJveCIsImp0aSI6IjFjODdhNWQ5LTNjODQtNGFlOS1iZTA5LWUzN2EyZmQxOWE1ZCIsInJlZ2lvbiI6Ik5ZIiwic3ViIjoibGFtLnRyYW4rdXNyMDA0QGJldHByb3BoZXQuY28iLCJ1c2VySWQiOiJlZjVjM2JlMy1hZDRkLTRlMGYtYWNlNy05NzA1NjkwYzgyNmUifQ.fFQqbbGIHKMJ4ZJNViACQ6ZplLCTgFuf2zfZcDzEYI4"
+}
+
+✅ User authenticated successfully
+
+================================================================================
+📤 SP LOGIN
+================================================================================
+Method: POST
+URL: https://api-ss-sandbox.betprophet.co/partner/auth/login
+Payload:
+{
+  "access_key": "e85df05bd1bd885fbc0fc4b24fdd2500",
+  "secret_key": "67344329e054349f07e7a29249dcadeb"
+}
+
+================================================================================
+📥 SP LOGIN RESPONSE
+================================================================================
+Status Code: 200
+Headers: {'Content-Type': 'application/json; charset=utf-8', 'Content-Length': '844', 'Connection': 'keep-alive', 'Date': 'Tue, 28 Oct 2025 04:50:10 GMT', 'X-Krakend-Completed': 'true', 'Cache-Control': 'public, max-age=3600', 'Vary': 'Origin, Origin', 'X-Krakend': 'Version 1.4.2', 'X-Cache': 'Miss from cloudfront', 'Via': '1.1 41d11417b7470cfb79cc5b299692369a.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'HIO52-P4', 'X-Amz-Cf-Id': 'Bi0bakvHAWj2qKimQh4Or7POirw0te-jDuj9uoYCaC-_Foe24_kcwA=='}
+Body:
+{
+  "data": {
+    "access_expire_time": 1761628210,
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzZWI0YjVmNS1hYWQ5LTQ2ZGEtYTc2OC04MzNhNzMwOGZmODkiLCJleHAiOjE3NjE2MjgyMTAsImlhdCI6MTc2MTYyNzAxMCwicGFydG5lclR5cGUiOiJtbSIsInBhcnRuZXJJRCI6IjI3OWNjNmExLWQ5MjYtNDI3My1hMThhLTc4MmVjY2ZiY2U3YiIsInR5cGUiOiJhY2Nlc3MiLCJhY2Nlc3NLZXkiOiJlODVkZjA1YmQxYmQ4ODVmYmMwZmM0YjI0ZmRkMjUwMCJ9.qkKPZg5HJDCyUxfS-3Yw5qdfGKQN-zxvsjSLZhMuPFQ",
+    "refresh_expire_time": 1761886210,
+    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1MzFlMmNlZS00MzBkLTQ2OGYtOTQ2ZC03OGU0MjliODUxYjciLCJleHAiOjE3NjE4ODYyMTAsImlhdCI6MTc2MTYyNzAxMCwicGFydG5lclR5cGUiOiJtbSIsInBhcnRuZXJJRCI6IjI3OWNjNmExLWQ5MjYtNDI3My1hMThhLTc4MmVjY2ZiY2U3YiIsInR5cGUiOiJyZWZyZXNoIiwiYWNjZXNzS2V5IjoiZTg1ZGYwNWJkMWJkODg1ZmJjMGZjNGIyNGZkZDI1MDAifQ.ZpSNp0J-fvOTowFkT8t37vBXfkJZ0tAGXk-fbvkHv58"
+  }
+}
+
+✅ SP authenticated successfully
+
+
+
+################################################################################
+# E2E TEST: Valid Positive Odds (+377)
+################################################################################
+Description: 2-leg parlay with correct probabilities matching +377 odds
+Expected: Should pass validation and confirm successfully
+
+================================================================================
+📤 STEP 1: CREATE PARLAY REQUEST - Valid Positive Odds (+377)
+================================================================================
+Method: POST
+URL: https://api-ss-sandbox.betprophet.co/parlay/api/v1/user/request
+Headers: {
+  "Authorization": "***",
+  "Content-Type": "application/json"
+}
+Payload:
+{
+  "marketLines": [
+    {
+      "line": -4.5,
+      "lineId": "04f2da44cbba365fd807c2bf6c5f09ab",
+      "marketId": 223,
+      "outcomeId": 1714,
+      "sportEventId": 19191
+    },
+    {
+      "line": -1.5,
+      "lineId": "b6cb5cf18a0148dfac0ae113e3ee6852",
+      "marketId": 223,
+      "outcomeId": 1714,
+      "sportEventId": 19192
+    }
+  ]
+}
+
+================================================================================
+📥 STEP 1: CREATE PARLAY RESPONSE
+================================================================================
+Status Code: 200
+Headers: {'Content-Type': 'application/json; charset=utf-8', 'Content-Length': '132', 'Connection': 'keep-alive', 'Date': 'Tue, 28 Oct 2025 04:50:11 GMT', 'X-Krakend-Completed': 'false', 'Vary': 'Origin, Origin', 'X-Krakend': 'Version 1.4.2', 'X-Cache': 'Miss from cloudfront', 'Via': '1.1 7d14d4fc1c149f1d429681a4c414c21a.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'HIO52-P4', 'X-Amz-Cf-Id': 'CKIEf0tMOzRghUDP0kPj0-Ppygi75pM-c3aHBKf9hHwD8ZHKHjSfFQ=='}
+Body:
+{
+  "data": {
+    "parlayId": "019a2926-f7c7-7592-b131-5ac5e86683b8",
+    "parlayRequestId": "019a2926-f7c7-7598-a1aa-4feb5ca88f0c"
+  },
+  "success": true
+}
+
+✅ Parlay created: 019a2926-f7c7-7592-b131-5ac5e86683b8
+
+================================================================================
+📤 STEP 2: SP PRICE QUOTE
+================================================================================
+Method: POST
+URL: https://api-ss-sandbox.betprophet.co/parlay/sp/orders/offers
+Headers: {
+  "Authorization": "***",
+  "Content-Type": "application/json"
+}
+Payload:
+{
+  "parlay_id": "019a2926-f7c7-7592-b131-5ac5e86683b8",
+  "offers": [
+    {
+      "odds": 377,
+      "max_risk": 5000,
+      "valid_until": 1761627110969010944,
+      "estimated_prices": [
+        {
+          "line_id": "04f2da44cbba365fd807c2bf6c5f09ab",
+          "odds": 377
+        },
+        {
+          "line_id": "b6cb5cf18a0148dfac0ae113e3ee6852",
+          "odds": 377
+        }
+      ]
+    }
+  ]
+}
+
+================================================================================
+📥 STEP 2: SP PRICE QUOTE RESPONSE
+================================================================================
+Status Code: 200
+Headers: {'Content-Type': 'application/json; charset=utf-8', 'Content-Length': '16', 'Connection': 'keep-alive', 'Date': 'Tue, 28 Oct 2025 04:50:11 GMT', 'X-Krakend-Completed': 'false', 'Vary': 'Origin, Origin', 'X-Krakend': 'Version 1.4.2', 'X-Cache': 'Miss from cloudfront', 'Via': '1.1 9a4713706b0c5d2719c0ce83795d8ec2.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'HIO52-P4', 'X-Amz-Cf-Id': 'EMjlWwcu9idAbIGbA4-AYvAq__pMzMgBePeNhwnZgukyMwd2WTg2Hw=='}
+Body:
+{
+  "success": true
+}
+
+✅ SP quote provided successfully
+
+================================================================================
+📤 STEP 3: USER CONFIRM BET
+================================================================================
+Method: POST
+URL: https://api-ss-sandbox.betprophet.co/parlay/api/v1/user/confirm
+Headers: {
+  "Authorization": "***",
+  "Content-Type": "application/json"
+}
+Payload:
+{
+  "parlayId": "019a2926-f7c7-7592-b131-5ac5e86683b8",
+  "odds": 377,
+  "stake": 5000
+}
+
+================================================================================
+📥 STEP 3: USER CONFIRM RESPONSE
+================================================================================
+Status Code: 200
+Headers: {'Content-Type': 'application/json; charset=utf-8', 'Content-Length': '107', 'Connection': 'keep-alive', 'Date': 'Tue, 28 Oct 2025 04:50:12 GMT', 'X-Krakend-Completed': 'false', 'Vary': 'Origin, Origin', 'X-Krakend': 'Version 1.4.2', 'X-Cache': 'Miss from cloudfront', 'Via': '1.1 8af7e76489ae9222af2304e63d2c0520.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'HIO52-P4', 'X-Amz-Cf-Id': '4bf6aVf7IAo0dPw_ygQtyUZccPCuVnc1OVXzkEj8CUQbtX7sRqjNzg=='}
+Body:
+{
+  "data": {
+    "createdAt": 1761627012406543125,
+    "parlayId": "019a2926-f7c7-7592-b131-5ac5e86683b8"
+  },
+  "success": true
+}
+
+✅ User bet confirmed
+
+================================================================================
+📤 GET SP ORDERS
+================================================================================
+Method: GET
+URL: https://api-ss-sandbox.betprophet.co/parlay/sp/orders
+Headers: {
+  "Authorization": "***"
+}
+
+================================================================================
+📥 GET SP ORDERS RESPONSE
+================================================================================
+Status Code: 200
+Headers: {'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Date': 'Tue, 28 Oct 2025 04:50:15 GMT', 'X-Krakend': 'Version 1.4.2', 'X-Krakend-Completed': 'false', 'Vary': 'Origin,Origin', 'X-Cache': 'Miss from cloudfront', 'Via': '1.1 0a9acaac1641579d63bb7e6410165540.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'HIO52-P4', 'X-Amz-Cf-Id': 'jWsDdDCfZoxLRe6DnAgmtj6E94HKU3IT33VESof9z8ArytagqGANkg=='}
+Body:
+{
+  "data": {
+    "limit": 10,
+    "orders": [
+      {
+        "confirmed_odds": null,
+        "confirmed_stake": null,
+        "legs": [
+          {
+            "line": -1.5,
+            "line_id": "b6cb5cf18a0148dfac0ae113e3ee6852",
+            "market_id": 223,
+            "origin_market_line": -1.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19192,
+            "tournament_id": 31
+          },
+          {
+            "line": -4.5,
+            "line_id": "04f2da44cbba365fd807c2bf6c5f09ab",
+            "market_id": 223,
+            "origin_market_line": -4.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19191,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a2926-ffcb-7ddc-84d7-c47c3a27f6f4",
+        "p_id": "019a2926-f7c7-7592-b131-5ac5e86683b8",
+        "settlement_status": "tbd",
+        "status": "sent_confirmation",
+        "updated_at": 1761627013
+      },
+      {
+        "confirmed_odds": -500,
+        "confirmed_stake": 3000,
+        "legs": [
+          {
+            "line": 0,
+            "line_id": "b13ea0fce285c5b5dbb800c47fe88019",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19192,
+            "tournament_id": 31
+          },
+          {
+            "line": -1.5,
+            "line_id": "b6cb5cf18a0148dfac0ae113e3ee6852",
+            "market_id": 223,
+            "origin_market_line": -1.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19192,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a2926-7b77-7a8b-a8e5-f5ad1718252e",
+        "p_id": "019a2926-7221-76c0-8fc7-2fedaf6dd255",
+        "settlement_status": "tbd",
+        "status": "finalized",
+        "updated_at": 1761626982
+      },
+      {
+        "confirmed_odds": -377,
+        "confirmed_stake": 5000,
+        "legs": [
+          {
+            "line": -1.5,
+            "line_id": "b6cb5cf18a0148dfac0ae113e3ee6852",
+            "market_id": 223,
+            "origin_market_line": -1.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19192,
+            "tournament_id": 31
+          },
+          {
+            "line": -4.5,
+            "line_id": "04f2da44cbba365fd807c2bf6c5f09ab",
+            "market_id": 223,
+            "origin_market_line": -4.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19191,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a2926-3665-78e9-a7a4-a1e508e30bbd",
+        "p_id": "019a2926-2e4b-7ddb-8b6c-f51a21f35cc0",
+        "settlement_status": "tbd",
+        "status": "finalized",
+        "updated_at": 1761626965
+      },
+      {
+        "confirmed_odds": 9301,
+        "confirmed_stake": 1,
+        "legs": [
+          {
+            "line": 0,
+            "line_id": "555f11f70d23541f860a0b3c43500824",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          },
+          {
+            "line": 5.5,
+            "line_id": "b9ebf6bb1eb7b11b8b0c222b3aac0db4",
+            "market_id": 223,
+            "origin_market_line": 5.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a2911-0132-7dfb-b93a-028bc44da157",
+        "p_id": "019a2910-fb94-7042-8859-2770575ad0ff",
+        "settlement_status": "tbd",
+        "status": "finalized",
+        "updated_at": 1761625572
+      },
+      {
+        "confirmed_odds": null,
+        "confirmed_stake": null,
+        "legs": [
+          {
+            "line": 0,
+            "line_id": "555f11f70d23541f860a0b3c43500824",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          },
+          {
+            "line": 5.5,
+            "line_id": "b9ebf6bb1eb7b11b8b0c222b3aac0db4",
+            "market_id": 223,
+            "origin_market_line": 5.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a2910-ae95-74bf-a9b2-3adc26b482ee",
+        "p_id": "019a2910-7a08-7284-8b7f-09eb9b80f508",
+        "settlement_status": "tbd",
+        "status": "failed",
+        "updated_at": 1761625560
+      },
+      {
+        "confirmed_odds": null,
+        "confirmed_stake": null,
+        "legs": [
+          {
+            "line": 0,
+            "line_id": "555f11f70d23541f860a0b3c43500824",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          },
+          {
+            "line": 5.5,
+            "line_id": "b9ebf6bb1eb7b11b8b0c222b3aac0db4",
+            "market_id": 223,
+            "origin_market_line": 5.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a2903-754d-7a5f-b0c4-d50749e50d28",
+        "p_id": "019a2903-6d42-7511-8751-ad5685f35dca",
+        "settlement_status": "tbd",
+        "status": "failed",
+        "updated_at": 1761624693
+      },
+      {
+        "confirmed_odds": null,
+        "confirmed_stake": null,
+        "legs": [
+          {
+            "line": 0,
+            "line_id": "555f11f70d23541f860a0b3c43500824",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          },
+          {
+            "line": 5.5,
+            "line_id": "b9ebf6bb1eb7b11b8b0c222b3aac0db4",
+            "market_id": 223,
+            "origin_market_line": 5.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a2901-33c0-724f-a167-7ce11a764f87",
+        "p_id": "019a2901-0a47-76a8-8b87-64b709d3ae9f",
+        "settlement_status": "tbd",
+        "status": "failed",
+        "updated_at": 1761624546
+      },
+      {
+        "confirmed_odds": -800,
+        "confirmed_stake": 150,
+        "legs": [
+          {
+            "line": 0,
+            "line_id": "555f11f70d23541f860a0b3c43500824",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          },
+          {
+            "line": 5.5,
+            "line_id": "b9ebf6bb1eb7b11b8b0c222b3aac0db4",
+            "market_id": 223,
+            "origin_market_line": 5.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a24b6-a884-735a-931c-4568a267bc2e",
+        "p_id": "019a24b6-9d0d-7904-9e64-a3a93df5e9da",
+        "settlement_status": "tbd",
+        "status": "finalized",
+        "updated_at": 1761552546
+      },
+      {
+        "confirmed_odds": null,
+        "confirmed_stake": null,
+        "legs": [
+          {
+            "line": 5.5,
+            "line_id": "b9ebf6bb1eb7b11b8b0c222b3aac0db4",
+            "market_id": 223,
+            "origin_market_line": 5.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          },
+          {
+            "line": 0,
+            "line_id": "555f11f70d23541f860a0b3c43500824",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a24b6-1cd9-7776-9b53-50f9368114fa",
+        "p_id": "019a24b6-11b2-7869-ad81-8633c35e78db",
+        "settlement_status": "tbd",
+        "status": "rejected",
+        "updated_at": 1761552510
+      },
+      {
+        "confirmed_odds": -800,
+        "confirmed_stake": 90,
+        "legs": [
+          {
+            "line": 0,
+            "line_id": "555f11f70d23541f860a0b3c43500824",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          },
+          {
+            "line": 5.5,
+            "line_id": "b9ebf6bb1eb7b11b8b0c222b3aac0db4",
+            "market_id": 223,
+            "origin_market_line": 5.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a24b5-0b26-76ec-beb7-32f9e60d8cc5",
+        "p_id": "019a24b4-ff4d-790e-b81f-b78aa31ebe84",
+        "settlement_status": "tbd",
+        "status": "finalized",
+        "updated_at": 1761552440
+      }
+    ],
+    "token": "MTA6MDE5YTI0YjUtMGIyNi03NmVjLWJlYjctMzJmOWU2MGQ4Y2M1"
+  }
+}
+
+✅ Found order UUID: 019a2926-ffcb-7ddc-84d7-c47c3a27f6f4
+
+================================================================================
+🔍 ODDS VALIDATION CHECK
+================================================================================
+Validation Input:
+  sp_odds: +377
+  price_probability: [
+  {
+    "lines": [
+      {
+        "line_id": "04f2da44cbba365fd807c2bf6c5f09ab",
+        "probability": 0.8160750396014694
+      },
+      {
+        "line_id": "b6cb5cf18a0148dfac0ae113e3ee6852",
+        "probability": 0.2570033410434336
+      }
+    ],
+    "max_risk": 5000,
+    "vig": 0.05
+  }
+]
+
+Validation Result:
+  valid: True
+  calculated_probability: 0.2097
+  calculated_odds: +377
+  odds_range: (370, 380)
+  explanation: SP odds: +377, Combined probability: 0.2097, Calculated odds: +377, Valid range: [+370, +380] -> ✓ VALID
+
+✅ Odds validation passed!
+
+================================================================================
+📤 STEP 4: SP CONFIRMATION WITH VALIDATION
+================================================================================
+Method: POST
+URL: https://api-ss-sandbox.betprophet.co/parlay/sp/orders/confirmations
+Params: {
+  "order_uuid": "019a2926-ffcb-7ddc-84d7-c47c3a27f6f4"
+}
+Headers: {
+  "Authorization": "***",
+  "Content-Type": "application/json"
+}
+Payload:
+{
+  "action": "accept",
+  "confirmed_stake": 5000,
+  "price_probability": [
+    {
+      "lines": [
+        {
+          "line_id": "04f2da44cbba365fd807c2bf6c5f09ab",
+          "probability": 0.8160750396014694
+        },
+        {
+          "line_id": "b6cb5cf18a0148dfac0ae113e3ee6852",
+          "probability": 0.2570033410434336
+        }
+      ],
+      "max_risk": 5000,
+      "vig": 0.05
+    }
+  ],
+  "signature": "test_signature_1761627015"
+}
+
+================================================================================
+📥 STEP 4: SP CONFIRMATION RESPONSE
+================================================================================
+Status Code: 200
+Headers: {'Content-Type': 'application/json; charset=utf-8', 'Content-Length': '219', 'Connection': 'keep-alive', 'Date': 'Tue, 28 Oct 2025 04:50:16 GMT', 'X-Krakend-Completed': 'false', 'Vary': 'Origin, Origin', 'X-Krakend': 'Version 1.4.2', 'X-Cache': 'Miss from cloudfront', 'Via': '1.1 8af7e76489ae9222af2304e63d2c0520.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'HIO52-P4', 'X-Amz-Cf-Id': 'WiFVUVB77UFEw_casnF7py58d3UMeIuVXUZzHYUdAUyJBj0WoPsApg=='}
+Body:
+{
+  "data": {
+    "confirmed_odds": -377,
+    "confirmed_stake": 5000,
+    "order_uuid": "019a2926-ffcb-7ddc-84d7-c47c3a27f6f4",
+    "parlay_id": "019a2926-f7c7-7592-b131-5ac5e86683b8",
+    "requested_odds": -377,
+    "requested_stake": 18850
+  },
+  "success": true
+}
+
+✅ SP confirmation successful
+
+================================================================================
+🏁 TEST RESULT: Valid Positive Odds (+377)
+================================================================================
+Expected Validation: True
+Actual Validation: True
+Confirmation Success: True
+
+✅ PASS: E2E test completed
+
+
+
+################################################################################
+# E2E TEST: Valid Negative Odds (-200)
+################################################################################
+Description: Heavy favorite 2-leg parlay with correct probabilities
+Expected: Should pass validation for negative odds
+
+================================================================================
+📤 STEP 1: CREATE PARLAY REQUEST - Valid Negative Odds (-200)
+================================================================================
+Method: POST
+URL: https://api-ss-sandbox.betprophet.co/parlay/api/v1/user/request
+Headers: {
+  "Authorization": "***",
+  "Content-Type": "application/json"
+}
+Payload:
+{
+  "marketLines": [
+    {
+      "line": -4.5,
+      "lineId": "04f2da44cbba365fd807c2bf6c5f09ab",
+      "marketId": 223,
+      "outcomeId": 1714,
+      "sportEventId": 19191
+    },
+    {
+      "line": 0,
+      "lineId": "b13ea0fce285c5b5dbb800c47fe88019",
+      "marketId": 219,
+      "outcomeId": 4,
+      "sportEventId": 19192
+    }
+  ]
+}
+
+================================================================================
+📥 STEP 1: CREATE PARLAY RESPONSE
+================================================================================
+Status Code: 200
+Headers: {'Content-Type': 'application/json; charset=utf-8', 'Content-Length': '132', 'Connection': 'keep-alive', 'Date': 'Tue, 28 Oct 2025 04:50:20 GMT', 'X-Krakend-Completed': 'false', 'Vary': 'Origin, Origin', 'X-Krakend': 'Version 1.4.2', 'X-Cache': 'Miss from cloudfront', 'Via': '1.1 743dabf2fdbfd64c0bd7adf3cea9dbec.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'HIO52-P4', 'X-Amz-Cf-Id': '8t76fgfgihuDfOUGowsGl2LUO7GvuUVGTwf7KqLEac-LIWBo2nM0Ew=='}
+Body:
+{
+  "data": {
+    "parlayId": "019a2927-1b02-7562-83fa-4cb390503c18",
+    "parlayRequestId": "019a2927-1b02-756a-9619-9124ca340af5"
+  },
+  "success": true
+}
+
+✅ Parlay created: 019a2927-1b02-7562-83fa-4cb390503c18
+
+================================================================================
+📤 STEP 2: SP PRICE QUOTE
+================================================================================
+Method: POST
+URL: https://api-ss-sandbox.betprophet.co/parlay/sp/orders/offers
+Headers: {
+  "Authorization": "***",
+  "Content-Type": "application/json"
+}
+Payload:
+{
+  "parlay_id": "019a2927-1b02-7562-83fa-4cb390503c18",
+  "offers": [
+    {
+      "odds": -200,
+      "max_risk": 8000,
+      "valid_until": 1761627120007024128,
+      "estimated_prices": [
+        {
+          "line_id": "04f2da44cbba365fd807c2bf6c5f09ab",
+          "odds": -200
+        },
+        {
+          "line_id": "b13ea0fce285c5b5dbb800c47fe88019",
+          "odds": -200
+        }
+      ]
+    }
+  ]
+}
+
+================================================================================
+📥 STEP 2: SP PRICE QUOTE RESPONSE
+================================================================================
+Status Code: 200
+Headers: {'Content-Type': 'application/json; charset=utf-8', 'Content-Length': '16', 'Connection': 'keep-alive', 'Date': 'Tue, 28 Oct 2025 04:50:20 GMT', 'X-Krakend-Completed': 'false', 'Vary': 'Origin, Origin', 'X-Krakend': 'Version 1.4.2', 'X-Cache': 'Miss from cloudfront', 'Via': '1.1 42eb5dfcc641e959ebaf60f01fc7d582.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'HIO52-P4', 'X-Amz-Cf-Id': 'VkDAPiqbJgSdCOhJr8wrulb0pFQAN0IYWBvQeoY81LpQOp2qMDOVUw=='}
+Body:
+{
+  "success": true
+}
+
+✅ SP quote provided successfully
+
+================================================================================
+📤 STEP 3: USER CONFIRM BET
+================================================================================
+Method: POST
+URL: https://api-ss-sandbox.betprophet.co/parlay/api/v1/user/confirm
+Headers: {
+  "Authorization": "***",
+  "Content-Type": "application/json"
+}
+Payload:
+{
+  "parlayId": "019a2927-1b02-7562-83fa-4cb390503c18",
+  "odds": -200,
+  "stake": 8000
+}
+
+================================================================================
+📥 STEP 3: USER CONFIRM RESPONSE
+================================================================================
+Status Code: 200
+Headers: {'Content-Type': 'application/json; charset=utf-8', 'Content-Length': '107', 'Connection': 'keep-alive', 'Date': 'Tue, 28 Oct 2025 04:50:21 GMT', 'X-Krakend-Completed': 'false', 'Vary': 'Origin, Origin', 'X-Krakend': 'Version 1.4.2', 'X-Cache': 'Miss from cloudfront', 'Via': '1.1 93b50b5ce635a36621d7bd38d3b0d6da.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'HIO52-P4', 'X-Amz-Cf-Id': '1abf4XTGqa1Hhg_R0zBoq3ZPvS90VuM41kRwXMMIp2KNWodj0h1eFA=='}
+Body:
+{
+  "data": {
+    "createdAt": 1761627021469301674,
+    "parlayId": "019a2927-1b02-7562-83fa-4cb390503c18"
+  },
+  "success": true
+}
+
+✅ User bet confirmed
+
+================================================================================
+📤 GET SP ORDERS
+================================================================================
+Method: GET
+URL: https://api-ss-sandbox.betprophet.co/parlay/sp/orders
+Headers: {
+  "Authorization": "***"
+}
+
+================================================================================
+📥 GET SP ORDERS RESPONSE
+================================================================================
+Status Code: 200
+Headers: {'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Date': 'Tue, 28 Oct 2025 04:50:24 GMT', 'X-Krakend': 'Version 1.4.2', 'X-Krakend-Completed': 'false', 'Vary': 'Origin,Origin', 'X-Cache': 'Miss from cloudfront', 'Via': '1.1 e765e4220a4552156eaeff06c1304e0c.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'HIO52-P4', 'X-Amz-Cf-Id': 'GJn1Xlsdg7BW9q16AZtNqZezlaXTeNL-Bpt7HHxLlkOlMzttaKT3SQ=='}
+Body:
+{
+  "data": {
+    "limit": 10,
+    "orders": [
+      {
+        "confirmed_odds": -377,
+        "confirmed_stake": 5000,
+        "legs": [
+          {
+            "line": -1.5,
+            "line_id": "b6cb5cf18a0148dfac0ae113e3ee6852",
+            "market_id": 223,
+            "origin_market_line": -1.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19192,
+            "tournament_id": 31
+          },
+          {
+            "line": -4.5,
+            "line_id": "04f2da44cbba365fd807c2bf6c5f09ab",
+            "market_id": 223,
+            "origin_market_line": -4.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19191,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a2926-ffcb-7ddc-84d7-c47c3a27f6f4",
+        "p_id": "019a2926-f7c7-7592-b131-5ac5e86683b8",
+        "settlement_status": "tbd",
+        "status": "finalized",
+        "updated_at": 1761627016
+      },
+      {
+        "confirmed_odds": -500,
+        "confirmed_stake": 3000,
+        "legs": [
+          {
+            "line": 0,
+            "line_id": "b13ea0fce285c5b5dbb800c47fe88019",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19192,
+            "tournament_id": 31
+          },
+          {
+            "line": -1.5,
+            "line_id": "b6cb5cf18a0148dfac0ae113e3ee6852",
+            "market_id": 223,
+            "origin_market_line": -1.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19192,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a2926-7b77-7a8b-a8e5-f5ad1718252e",
+        "p_id": "019a2926-7221-76c0-8fc7-2fedaf6dd255",
+        "settlement_status": "tbd",
+        "status": "finalized",
+        "updated_at": 1761626982
+      },
+      {
+        "confirmed_odds": -377,
+        "confirmed_stake": 5000,
+        "legs": [
+          {
+            "line": -1.5,
+            "line_id": "b6cb5cf18a0148dfac0ae113e3ee6852",
+            "market_id": 223,
+            "origin_market_line": -1.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19192,
+            "tournament_id": 31
+          },
+          {
+            "line": -4.5,
+            "line_id": "04f2da44cbba365fd807c2bf6c5f09ab",
+            "market_id": 223,
+            "origin_market_line": -4.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19191,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a2926-3665-78e9-a7a4-a1e508e30bbd",
+        "p_id": "019a2926-2e4b-7ddb-8b6c-f51a21f35cc0",
+        "settlement_status": "tbd",
+        "status": "finalized",
+        "updated_at": 1761626965
+      },
+      {
+        "confirmed_odds": 9301,
+        "confirmed_stake": 1,
+        "legs": [
+          {
+            "line": 0,
+            "line_id": "555f11f70d23541f860a0b3c43500824",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          },
+          {
+            "line": 5.5,
+            "line_id": "b9ebf6bb1eb7b11b8b0c222b3aac0db4",
+            "market_id": 223,
+            "origin_market_line": 5.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a2911-0132-7dfb-b93a-028bc44da157",
+        "p_id": "019a2910-fb94-7042-8859-2770575ad0ff",
+        "settlement_status": "tbd",
+        "status": "finalized",
+        "updated_at": 1761625572
+      },
+      {
+        "confirmed_odds": null,
+        "confirmed_stake": null,
+        "legs": [
+          {
+            "line": 0,
+            "line_id": "555f11f70d23541f860a0b3c43500824",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          },
+          {
+            "line": 5.5,
+            "line_id": "b9ebf6bb1eb7b11b8b0c222b3aac0db4",
+            "market_id": 223,
+            "origin_market_line": 5.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a2910-ae95-74bf-a9b2-3adc26b482ee",
+        "p_id": "019a2910-7a08-7284-8b7f-09eb9b80f508",
+        "settlement_status": "tbd",
+        "status": "failed",
+        "updated_at": 1761625560
+      },
+      {
+        "confirmed_odds": null,
+        "confirmed_stake": null,
+        "legs": [
+          {
+            "line": 0,
+            "line_id": "555f11f70d23541f860a0b3c43500824",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          },
+          {
+            "line": 5.5,
+            "line_id": "b9ebf6bb1eb7b11b8b0c222b3aac0db4",
+            "market_id": 223,
+            "origin_market_line": 5.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a2903-754d-7a5f-b0c4-d50749e50d28",
+        "p_id": "019a2903-6d42-7511-8751-ad5685f35dca",
+        "settlement_status": "tbd",
+        "status": "failed",
+        "updated_at": 1761624693
+      },
+      {
+        "confirmed_odds": null,
+        "confirmed_stake": null,
+        "legs": [
+          {
+            "line": 0,
+            "line_id": "555f11f70d23541f860a0b3c43500824",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          },
+          {
+            "line": 5.5,
+            "line_id": "b9ebf6bb1eb7b11b8b0c222b3aac0db4",
+            "market_id": 223,
+            "origin_market_line": 5.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a2901-33c0-724f-a167-7ce11a764f87",
+        "p_id": "019a2901-0a47-76a8-8b87-64b709d3ae9f",
+        "settlement_status": "tbd",
+        "status": "failed",
+        "updated_at": 1761624546
+      },
+      {
+        "confirmed_odds": -800,
+        "confirmed_stake": 150,
+        "legs": [
+          {
+            "line": 0,
+            "line_id": "555f11f70d23541f860a0b3c43500824",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          },
+          {
+            "line": 5.5,
+            "line_id": "b9ebf6bb1eb7b11b8b0c222b3aac0db4",
+            "market_id": 223,
+            "origin_market_line": 5.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a24b6-a884-735a-931c-4568a267bc2e",
+        "p_id": "019a24b6-9d0d-7904-9e64-a3a93df5e9da",
+        "settlement_status": "tbd",
+        "status": "finalized",
+        "updated_at": 1761552546
+      },
+      {
+        "confirmed_odds": null,
+        "confirmed_stake": null,
+        "legs": [
+          {
+            "line": 5.5,
+            "line_id": "b9ebf6bb1eb7b11b8b0c222b3aac0db4",
+            "market_id": 223,
+            "origin_market_line": 5.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          },
+          {
+            "line": 0,
+            "line_id": "555f11f70d23541f860a0b3c43500824",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a24b6-1cd9-7776-9b53-50f9368114fa",
+        "p_id": "019a24b6-11b2-7869-ad81-8633c35e78db",
+        "settlement_status": "tbd",
+        "status": "rejected",
+        "updated_at": 1761552510
+      },
+      {
+        "confirmed_odds": -800,
+        "confirmed_stake": 90,
+        "legs": [
+          {
+            "line": 0,
+            "line_id": "555f11f70d23541f860a0b3c43500824",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          },
+          {
+            "line": 5.5,
+            "line_id": "b9ebf6bb1eb7b11b8b0c222b3aac0db4",
+            "market_id": 223,
+            "origin_market_line": 5.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a24b5-0b26-76ec-beb7-32f9e60d8cc5",
+        "p_id": "019a24b4-ff4d-790e-b81f-b78aa31ebe84",
+        "settlement_status": "tbd",
+        "status": "finalized",
+        "updated_at": 1761552440
+      }
+    ],
+    "token": "MTA6MDE5YTI0YjUtMGIyNi03NmVjLWJlYjctMzJmOWU2MGQ4Y2M1"
+  }
+}
+
+❌ Order UUID not found for parlay 019a2927-1b02-7562-83fa-4cb390503c18
+
+
+
+################################################################################
+# E2E TEST: Invalid - Mismatched Probabilities
+################################################################################
+Description: Odds +500 but probabilities suggest -426
+Expected: Should fail validation due to probability mismatch
+
+================================================================================
+📤 STEP 1: CREATE PARLAY REQUEST - Invalid - Mismatched Probabilities
+================================================================================
+Method: POST
+URL: https://api-ss-sandbox.betprophet.co/parlay/api/v1/user/request
+Headers: {
+  "Authorization": "***",
+  "Content-Type": "application/json"
+}
+Payload:
+{
+  "marketLines": [
+    {
+      "line": 0,
+      "lineId": "b13ea0fce285c5b5dbb800c47fe88019",
+      "marketId": 219,
+      "outcomeId": 4,
+      "sportEventId": 19192
+    },
+    {
+      "line": -1.5,
+      "lineId": "b6cb5cf18a0148dfac0ae113e3ee6852",
+      "marketId": 223,
+      "outcomeId": 1714,
+      "sportEventId": 19192
+    }
+  ]
+}
+
+================================================================================
+📥 STEP 1: CREATE PARLAY RESPONSE
+================================================================================
+Status Code: 200
+Headers: {'Content-Type': 'application/json; charset=utf-8', 'Content-Length': '132', 'Connection': 'keep-alive', 'Date': 'Tue, 28 Oct 2025 04:50:28 GMT', 'X-Krakend-Completed': 'false', 'Vary': 'Origin, Origin', 'X-Krakend': 'Version 1.4.2', 'X-Cache': 'Miss from cloudfront', 'Via': '1.1 bb0a0a1792594c22377eddc835c4b882.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'HIO52-P4', 'X-Amz-Cf-Id': 'qU4AkQRrmalU0z1hKnLJkwPeOibj1eTvLqLG2eqKQORyLvkl5UNwuQ=='}
+Body:
+{
+  "data": {
+    "parlayId": "019a2927-3b45-77e8-8d17-545f6108ed68",
+    "parlayRequestId": "019a2927-3b45-77ee-ae70-fffea55c9053"
+  },
+  "success": true
+}
+
+✅ Parlay created: 019a2927-3b45-77e8-8d17-545f6108ed68
+
+================================================================================
+📤 STEP 2: SP PRICE QUOTE
+================================================================================
+Method: POST
+URL: https://api-ss-sandbox.betprophet.co/parlay/sp/orders/offers
+Headers: {
+  "Authorization": "***",
+  "Content-Type": "application/json"
+}
+Payload:
+{
+  "parlay_id": "019a2927-3b45-77e8-8d17-545f6108ed68",
+  "offers": [
+    {
+      "odds": 500,
+      "max_risk": 3000,
+      "valid_until": 1761627128258503936,
+      "estimated_prices": [
+        {
+          "line_id": "b13ea0fce285c5b5dbb800c47fe88019",
+          "odds": 500
+        },
+        {
+          "line_id": "b6cb5cf18a0148dfac0ae113e3ee6852",
+          "odds": 500
+        }
+      ]
+    }
+  ]
+}
+
+================================================================================
+📥 STEP 2: SP PRICE QUOTE RESPONSE
+================================================================================
+Status Code: 200
+Headers: {'Content-Type': 'application/json; charset=utf-8', 'Content-Length': '16', 'Connection': 'keep-alive', 'Date': 'Tue, 28 Oct 2025 04:50:29 GMT', 'X-Krakend-Completed': 'false', 'Vary': 'Origin, Origin', 'X-Krakend': 'Version 1.4.2', 'X-Cache': 'Miss from cloudfront', 'Via': '1.1 38789cdd14ddea5c4c609cb0e6656396.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'HIO52-P4', 'X-Amz-Cf-Id': 'iJTrLYiBgvEnme45-jmXHku6VKAxzkzc-5-QHYQo1IYldhMt2kT84g=='}
+Body:
+{
+  "success": true
+}
+
+✅ SP quote provided successfully
+
+================================================================================
+📤 STEP 3: USER CONFIRM BET
+================================================================================
+Method: POST
+URL: https://api-ss-sandbox.betprophet.co/parlay/api/v1/user/confirm
+Headers: {
+  "Authorization": "***",
+  "Content-Type": "application/json"
+}
+Payload:
+{
+  "parlayId": "019a2927-3b45-77e8-8d17-545f6108ed68",
+  "odds": 500,
+  "stake": 3000
+}
+
+================================================================================
+📥 STEP 3: USER CONFIRM RESPONSE
+================================================================================
+Status Code: 200
+Headers: {'Content-Type': 'application/json; charset=utf-8', 'Content-Length': '107', 'Connection': 'keep-alive', 'Date': 'Tue, 28 Oct 2025 04:50:29 GMT', 'X-Krakend-Completed': 'false', 'Vary': 'Origin, Origin', 'X-Krakend': 'Version 1.4.2', 'X-Cache': 'Miss from cloudfront', 'Via': '1.1 3caf9df4ca497afd40efb87f8957a7fa.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'HIO52-P4', 'X-Amz-Cf-Id': 'FaEWCAVCZFctRHgniNjS1p5WW-sb6M84Zx-oVV4IRbGNqm_NThjGdg=='}
+Body:
+{
+  "data": {
+    "createdAt": 1761627029718461309,
+    "parlayId": "019a2927-3b45-77e8-8d17-545f6108ed68"
+  },
+  "success": true
+}
+
+✅ User bet confirmed
+
+================================================================================
+📤 GET SP ORDERS
+================================================================================
+Method: GET
+URL: https://api-ss-sandbox.betprophet.co/parlay/sp/orders
+Headers: {
+  "Authorization": "***"
+}
+
+================================================================================
+📥 GET SP ORDERS RESPONSE
+================================================================================
+Status Code: 200
+Headers: {'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Date': 'Tue, 28 Oct 2025 04:50:32 GMT', 'X-Krakend': 'Version 1.4.2', 'X-Krakend-Completed': 'false', 'Vary': 'Origin,Origin', 'X-Cache': 'Miss from cloudfront', 'Via': '1.1 a454a679efa1e16833b77cb6af61e11c.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'HIO52-P4', 'X-Amz-Cf-Id': 'g5vNI4NVG91ma-3_hXzQKM-9c2sFSEKRUdumzZ_a0UaXT7IzzHYVSw=='}
+Body:
+{
+  "data": {
+    "limit": 10,
+    "orders": [
+      {
+        "confirmed_odds": null,
+        "confirmed_stake": null,
+        "legs": [
+          {
+            "line": -1.5,
+            "line_id": "b6cb5cf18a0148dfac0ae113e3ee6852",
+            "market_id": 223,
+            "origin_market_line": -1.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19192,
+            "tournament_id": 31
+          },
+          {
+            "line": 0,
+            "line_id": "b13ea0fce285c5b5dbb800c47fe88019",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19192,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a2927-42f7-7d41-9bce-432d419e1cb5",
+        "p_id": "019a2927-3b45-77e8-8d17-545f6108ed68",
+        "settlement_status": "tbd",
+        "status": "sent_confirmation",
+        "updated_at": 1761627030
+      },
+      {
+        "confirmed_odds": -377,
+        "confirmed_stake": 5000,
+        "legs": [
+          {
+            "line": -4.5,
+            "line_id": "04f2da44cbba365fd807c2bf6c5f09ab",
+            "market_id": 223,
+            "origin_market_line": -4.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19191,
+            "tournament_id": 31
+          },
+          {
+            "line": -1.5,
+            "line_id": "b6cb5cf18a0148dfac0ae113e3ee6852",
+            "market_id": 223,
+            "origin_market_line": -1.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19192,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a2926-ffcb-7ddc-84d7-c47c3a27f6f4",
+        "p_id": "019a2926-f7c7-7592-b131-5ac5e86683b8",
+        "settlement_status": "tbd",
+        "status": "finalized",
+        "updated_at": 1761627016
+      },
+      {
+        "confirmed_odds": -500,
+        "confirmed_stake": 3000,
+        "legs": [
+          {
+            "line": -1.5,
+            "line_id": "b6cb5cf18a0148dfac0ae113e3ee6852",
+            "market_id": 223,
+            "origin_market_line": -1.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19192,
+            "tournament_id": 31
+          },
+          {
+            "line": 0,
+            "line_id": "b13ea0fce285c5b5dbb800c47fe88019",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19192,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a2926-7b77-7a8b-a8e5-f5ad1718252e",
+        "p_id": "019a2926-7221-76c0-8fc7-2fedaf6dd255",
+        "settlement_status": "tbd",
+        "status": "finalized",
+        "updated_at": 1761626982
+      },
+      {
+        "confirmed_odds": -377,
+        "confirmed_stake": 5000,
+        "legs": [
+          {
+            "line": -1.5,
+            "line_id": "b6cb5cf18a0148dfac0ae113e3ee6852",
+            "market_id": 223,
+            "origin_market_line": -1.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19192,
+            "tournament_id": 31
+          },
+          {
+            "line": -4.5,
+            "line_id": "04f2da44cbba365fd807c2bf6c5f09ab",
+            "market_id": 223,
+            "origin_market_line": -4.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19191,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a2926-3665-78e9-a7a4-a1e508e30bbd",
+        "p_id": "019a2926-2e4b-7ddb-8b6c-f51a21f35cc0",
+        "settlement_status": "tbd",
+        "status": "finalized",
+        "updated_at": 1761626965
+      },
+      {
+        "confirmed_odds": 9301,
+        "confirmed_stake": 1,
+        "legs": [
+          {
+            "line": 0,
+            "line_id": "555f11f70d23541f860a0b3c43500824",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          },
+          {
+            "line": 5.5,
+            "line_id": "b9ebf6bb1eb7b11b8b0c222b3aac0db4",
+            "market_id": 223,
+            "origin_market_line": 5.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a2911-0132-7dfb-b93a-028bc44da157",
+        "p_id": "019a2910-fb94-7042-8859-2770575ad0ff",
+        "settlement_status": "tbd",
+        "status": "finalized",
+        "updated_at": 1761625572
+      },
+      {
+        "confirmed_odds": null,
+        "confirmed_stake": null,
+        "legs": [
+          {
+            "line": 0,
+            "line_id": "555f11f70d23541f860a0b3c43500824",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          },
+          {
+            "line": 5.5,
+            "line_id": "b9ebf6bb1eb7b11b8b0c222b3aac0db4",
+            "market_id": 223,
+            "origin_market_line": 5.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a2910-ae95-74bf-a9b2-3adc26b482ee",
+        "p_id": "019a2910-7a08-7284-8b7f-09eb9b80f508",
+        "settlement_status": "tbd",
+        "status": "failed",
+        "updated_at": 1761625560
+      },
+      {
+        "confirmed_odds": null,
+        "confirmed_stake": null,
+        "legs": [
+          {
+            "line": 0,
+            "line_id": "555f11f70d23541f860a0b3c43500824",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          },
+          {
+            "line": 5.5,
+            "line_id": "b9ebf6bb1eb7b11b8b0c222b3aac0db4",
+            "market_id": 223,
+            "origin_market_line": 5.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a2903-754d-7a5f-b0c4-d50749e50d28",
+        "p_id": "019a2903-6d42-7511-8751-ad5685f35dca",
+        "settlement_status": "tbd",
+        "status": "failed",
+        "updated_at": 1761624693
+      },
+      {
+        "confirmed_odds": null,
+        "confirmed_stake": null,
+        "legs": [
+          {
+            "line": 0,
+            "line_id": "555f11f70d23541f860a0b3c43500824",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          },
+          {
+            "line": 5.5,
+            "line_id": "b9ebf6bb1eb7b11b8b0c222b3aac0db4",
+            "market_id": 223,
+            "origin_market_line": 5.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a2901-33c0-724f-a167-7ce11a764f87",
+        "p_id": "019a2901-0a47-76a8-8b87-64b709d3ae9f",
+        "settlement_status": "tbd",
+        "status": "failed",
+        "updated_at": 1761624546
+      },
+      {
+        "confirmed_odds": -800,
+        "confirmed_stake": 150,
+        "legs": [
+          {
+            "line": 5.5,
+            "line_id": "b9ebf6bb1eb7b11b8b0c222b3aac0db4",
+            "market_id": 223,
+            "origin_market_line": 5.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          },
+          {
+            "line": 0,
+            "line_id": "555f11f70d23541f860a0b3c43500824",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a24b6-a884-735a-931c-4568a267bc2e",
+        "p_id": "019a24b6-9d0d-7904-9e64-a3a93df5e9da",
+        "settlement_status": "tbd",
+        "status": "finalized",
+        "updated_at": 1761552546
+      },
+      {
+        "confirmed_odds": null,
+        "confirmed_stake": null,
+        "legs": [
+          {
+            "line": 0,
+            "line_id": "555f11f70d23541f860a0b3c43500824",
+            "market_id": 219,
+            "origin_market_line": 0,
+            "outcome_id": 4,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          },
+          {
+            "line": 5.5,
+            "line_id": "b9ebf6bb1eb7b11b8b0c222b3aac0db4",
+            "market_id": 223,
+            "origin_market_line": 5.5,
+            "outcome_id": 1714,
+            "settlement_status": "tbd",
+            "sport_event_id": 19069,
+            "tournament_id": 31
+          }
+        ],
+        "order_uuid": "019a24b6-1cd9-7776-9b53-50f9368114fa",
+        "p_id": "019a24b6-11b2-7869-ad81-8633c35e78db",
+        "settlement_status": "tbd",
+        "status": "rejected",
+        "updated_at": 1761552510
+      }
+    ],
+    "token": "MTA6MDE5YTI0YjYtMWNkOS03Nzc2LTliNTMtNTBmOTM2ODExNGZh"
+  }
+}
+
+✅ Found order UUID: 019a2927-42f7-7d41-9bce-432d419e1cb5
+
+================================================================================
+🔍 ODDS VALIDATION CHECK
+================================================================================
+Validation Input:
+  sp_odds: +500
+  price_probability: [
+  {
+    "lines": [
+      {
+        "line_id": "b13ea0fce285c5b5dbb800c47fe88019",
+        "probability": 0.9
+      },
+      {
+        "line_id": "b6cb5cf18a0148dfac0ae113e3ee6852",
+        "probability": 0.9
+      }
+    ],
+    "max_risk": 3000,
+    "vig": 0.1
+  }
+]
+
+Validation Result:
+  valid: False
+  calculated_probability: 0.8100
+  calculated_odds: -426
+  odds_range: (500, 520)
+  explanation: SP odds: +500, Combined probability: 0.8100, Calculated odds: -426, Valid range: [+500, +520] -> ✗ INVALID
+
+⚠️  Odds validation failed! Proceeding anyway for testing...
+
+================================================================================
+📤 STEP 4: SP CONFIRMATION WITH VALIDATION
+================================================================================
+Method: POST
+URL: https://api-ss-sandbox.betprophet.co/parlay/sp/orders/confirmations
+Params: {
+  "order_uuid": "019a2927-42f7-7d41-9bce-432d419e1cb5"
+}
+Headers: {
+  "Authorization": "***",
+  "Content-Type": "application/json"
+}
+Payload:
+{
+  "action": "accept",
+  "confirmed_stake": 3000,
+  "price_probability": [
+    {
+      "lines": [
+        {
+          "line_id": "b13ea0fce285c5b5dbb800c47fe88019",
+          "probability": 0.9
+        },
+        {
+          "line_id": "b6cb5cf18a0148dfac0ae113e3ee6852",
+          "probability": 0.9
+        }
+      ],
+      "max_risk": 3000,
+      "vig": 0.1
+    }
+  ],
+  "signature": "test_signature_1761627032"
+}
+
+================================================================================
+📥 STEP 4: SP CONFIRMATION RESPONSE
+================================================================================
+Status Code: 200
+Headers: {'Content-Type': 'application/json; charset=utf-8', 'Content-Length': '251', 'Connection': 'keep-alive', 'Date': 'Tue, 28 Oct 2025 04:50:33 GMT', 'X-Krakend-Completed': 'false', 'Vary': 'Origin, Origin', 'X-Krakend': 'Version 1.4.2', 'X-Cache': 'Miss from cloudfront', 'Via': '1.1 5f7d374d92b73172fce43b7879076d1c.cloudfront.net (CloudFront)', 'X-Amz-Cf-Pop': 'HIO52-P4', 'X-Amz-Cf-Id': '2XXQHET94DD5-DHeBODJO1yy9_I42ujOMm5uf5h7b1YvdOmjJV-lsA=='}
+Body:
+{
+  "data": {
+    "confirmed_odds": -500,
+    "confirmed_stake": 3000,
+    "order_uuid": "019a2927-42f7-7d41-9bce-432d419e1cb5",
+    "parlay_id": "019a2927-3b45-77e8-8d17-545f6108ed68",
+    "requested_odds": -500,
+    "requested_stake": 15000
+  },
+  "success": true,
+  "warning": "invalid probability"
+}
+
+✅ SP confirmation successful
+
+================================================================================
+🏁 TEST RESULT: Invalid - Mismatched Probabilities
+================================================================================
+Expected Validation: False
+Actual Validation: False
+Confirmation Success: True
+
+✅ PASS: E2E test completed
+
+
+################################################################################
+# FINAL SUMMARY
+################################################################################
+✅ PASS: Valid Positive Odds (+377)
+❌ FAIL: Valid Negative Odds (-200)
+✅ PASS: Invalid - Mismatched Probabilities
+
+📊 Total: 2/3 tests passed
+
+⚠️  1 test(s) failed
